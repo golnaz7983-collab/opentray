@@ -114,6 +114,33 @@ button{cursor:pointer;border:0}
 @media(max-width:1000px){.nav{display:none}.gameLayout{grid-template-columns:220px 1fr}.gameLayout>.side:last-child{display:none}.cards{grid-template-columns:1fr 1fr}.topIn{justify-content:space-between}.brand{min-width:auto}.game{min-height:760px}}
 @media(max-width:700px){.top{height:64px}.brand b{font-size:17px}.brand small{font-size:9px}.topBtns .topBtn:nth-child(2){display:none}.heroTitle h1{font-size:30px}.cards,.quick,.panelGrid,.grid2,.grid3{grid-template-columns:1fr}.game{height:auto;min-height:100vh}.gameLayout{height:auto;grid-template-columns:1fr;padding:5px}.gameLayout>.side{display:block;max-height:250px}.mapWrap{height:62vh;min-height:480px}.gameBar{overflow:auto;white-space:nowrap}.stat{font-size:11px}.radial{width:190px}}
 
+
+/* Multiplayer lobby/game layer */
+
+:root{--bg:#030913;--panel:#081727eF;--panel2:#0b2035;--line:#183653;--cyan:#13a8ef;--cyan2:#42c9ff;--text:#f3f8ff;--muted:#8fa4ba;--good:#37df8a;--warn:#f6c74b;--danger:#ff6370}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Tahoma,Arial,sans-serif}body{overflow-x:hidden}button,input,select{font:inherit}button{cursor:pointer}
+.top{position:sticky;top:0;z-index:50;height:76px;background:rgba(3,8,15,.96);backdrop-filter:blur(14px);border-bottom:1px solid #18304a}
+.topIn{width:min(1280px,95%);height:100%;margin:auto;display:flex;align-items:center;gap:18px}.brand{display:flex;gap:10px;align-items:center;min-width:190px}.brandMark{width:34px;height:34px;border:3px solid var(--cyan);transform:rotate(45deg);position:relative}.brandMark:after{content:"";position:absolute;inset:6px;border:2px solid #fff}.brand b{font-size:21px;letter-spacing:.8px}.brand small{display:block;color:var(--cyan2);font-weight:800;margin-top:3px}
+.nav{display:flex;gap:20px;flex:1;justify-content:center}.nav a{color:#b9c7d6;text-decoration:none;font-size:14px;font-weight:800}.nav a:hover{color:var(--cyan2)}
+.topBtns{display:flex;gap:8px}.topBtn{background:#0b1a2c;color:#eaf5ff;border:1px solid #29445f;border-radius:10px;padding:9px 12px;font-weight:900}.topBtn.blue{background:linear-gradient(135deg,#087fca,#0ba9ef);border-color:#0ca6ee}.topCode{font-size:12px;color:#6ed6ff;font-weight:900;min-width:78px;text-align:center}
+.screen{display:none}.screen.on{display:block}.hero{min-height:calc(100vh - 76px);padding:32px 0 70px;background:radial-gradient(circle at 50% 0,#0c3554 0,transparent 35%),linear-gradient(#061426,#020811)}
+.wrap{width:min(1280px,95%);margin:auto}.heroTitle{text-align:center;margin:20px auto 30px}.heroTitle h1{margin:0;font-size:40px}.heroTitle p{color:var(--muted);margin:10px 0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.mapCard{background:linear-gradient(145deg,#0a1b2d,#07111f);border:1px solid #1c3b58;border-radius:18px;padding:22px;min-height:170px;position:relative;overflow:hidden}.mapCard:before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:#0c92d622;right:-50px;top:-70px}.mapCard h3{margin:0 0 8px;font-size:22px}.mapCard p{color:#9bb0c3;line-height:1.8}.mapCard button{position:absolute;left:18px;bottom:18px;border:1px solid #245778;background:#092238;color:#fff;padding:9px 13px;border-radius:9px;font-weight:900}.quick{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.bigAction{height:70px;border-radius:14px;background:#07192a;border:1px solid #234562;color:#fff;font-size:19px;font-weight:900}.bigAction.primary{background:linear-gradient(135deg,#087ec8,#0aa9ec);border-color:#0baaf0}
+.infoStrip{margin-top:24px;background:#071525;border:1px solid #18324e;border-radius:14px;padding:14px 18px;color:#a5b8ca;text-align:center}.infoStrip b{color:#fff}
+.panelGrid{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:20px}.panel{background:rgba(7,20,35,.95);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 18px 50px #0007}.panel h2,.panel h3{margin:0 0 12px}.muted{color:var(--muted)}.row{display:flex;gap:10px;align-items:center}.field{width:100%;background:#04101d;color:#fff;border:1px solid #24435f;border-radius:10px;padding:12px}.field:focus{outline:2px solid #0a94dc55;border-color:#0aa7ef}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.label{font-size:12px;color:#93a8bc;font-weight:800;margin-bottom:6px}.control{margin-bottom:12px}
+.check{display:flex;align-items:center;gap:8px;background:#061525;border:1px solid #183550;border-radius:10px;padding:11px;color:#c9d6e2}.check input{accent-color:var(--cyan)}
+.lobbyRow{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:right;background:#061525;border:1px solid #1b3853;color:#fff;padding:12px 14px;border-radius:11px;margin:8px 0}.lobbyRow:hover{border-color:#16a9ee;background:#082039}.lobbyRow small{display:block;color:#8ea5b8;margin-top:4px}.lobbyRow strong{color:#4acbff;letter-spacing:2px}.empty{padding:18px;color:#8197aa;text-align:center;border:1px dashed #23405a;border-radius:10px}
+.playerLine{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #132b42}.playerLine i,.scoreRow i{width:12px;height:12px;border-radius:50%;display:inline-block}.playerLine span{flex:1}.playerLine b{font-size:11px;color:#7e95aa}
+.codeBox{display:flex;align-items:center;justify-content:space-between;background:#03101c;border:1px solid #1b405e;border-radius:14px;padding:14px;margin:10px 0 16px}.codeBox b{font-size:28px;letter-spacing:5px;color:#5bd2ff}.codeBox span{font-size:12px;color:#8fa5b8}
+.chat{height:250px;overflow:auto;background:#03101b;border:1px solid #18334c;border-radius:12px;padding:10px}.msg{padding:7px 5px;border-bottom:1px solid #10253a;display:flex;gap:8px;line-height:1.6}.msg b{color:#5bcfff}.msg span{color:#d5e0ea}.chatInput{display:flex;gap:8px;margin-top:8px}.chatInput input{flex:1}.send{background:#0b92d9;color:#fff;border-radius:9px;padding:0 15px;font-weight:900;border:1px solid #18a8ee}
+.game{height:calc(100vh - 76px);min-height:650px;background:#020913;position:relative}.gameBar{height:62px;display:flex;align-items:center;gap:10px;padding:8px 12px;background:#061321;border-bottom:1px solid #17334e;position:relative;z-index:20}.stat{background:#071a2a;border:1px solid #1b3b56;border-radius:9px;padding:8px 11px;font-size:12px;font-weight:900}.stat b{color:#62d5ff}.gameMapName{font-weight:900;font-size:17px;margin-left:auto}.gameCode{color:#5fd6ff;font-weight:900;letter-spacing:2px}.gameLayout{height:calc(100% - 62px);display:grid;grid-template-columns:300px 1fr 300px;gap:8px;padding:8px}.side{background:#061423e8;border:1px solid #18344e;border-radius:14px;padding:12px;overflow:auto}.mapWrap{position:relative;border:1px solid #173751;border-radius:14px;overflow:hidden;min-width:0;background:#04101b}.mapCanvas{width:100%;height:100%;display:block}.mapHint{position:absolute;left:12px;top:12px;background:#03101bd9;border:1px solid #1e405c;color:#cce7f8;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none}.mapTools{position:absolute;right:12px;top:12px;display:flex;gap:6px}.mapTools button{background:#061524dd;color:#fff;border:1px solid #2b4b65;border-radius:8px;padding:7px 10px}.ship{position:absolute;left:0;top:0;font-size:26px;pointer-events:none;z-index:8;filter:drop-shadow(0 4px 8px #000);transition:transform .05s linear}
+.scoreRow{display:grid;grid-template-columns:12px 1fr auto auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid #112a40;font-size:12px}.scoreRow span{color:#91a8ba}.scoreRow strong{color:#f8d36b}.resource{display:grid;grid-template-columns:1fr 1fr;gap:8px}.res{background:#061b2a;border:1px solid #1a3b54;border-radius:10px;padding:9px}.res small{display:block;color:#8299ac}.res b{display:block;margin-top:4px;font-size:16px}.countryCard{background:#04111e;border:1px solid #193751;border-radius:10px;padding:10px;margin:10px 0}.countryCard b{font-size:15px}.countryCard small{display:block;color:#8ea5b7;line-height:1.7;margin-top:4px}
+.radial{position:fixed;z-index:40;display:none;width:200px;background:#061626ef;border:1px solid #2a4d68;border-radius:16px;padding:10px;box-shadow:0 20px 70px #000}.radial.show{display:block}.radialTitle{font-weight:900;margin-bottom:8px}.radialInfo{font-size:11px;color:#91a9bb;line-height:1.6;margin-bottom:8px}.radialGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.radialGrid button{height:44px;border-radius:10px;background:#0a2033;color:#fff;border:1px solid #21435e;font-weight:900}.radialGrid button:hover{border-color:#12a7ee}.radialGrid button:disabled{opacity:.35;cursor:not-allowed}
+.attackPanel{position:fixed;z-index:45;left:50%;top:50%;transform:translate(-50%,-50%);display:none;width:min(420px,92vw);background:#061626f5;border:1px solid #2c536e;border-radius:16px;padding:18px;box-shadow:0 25px 90px #000}.attackPanel.show{display:block}.attackPanel h3{margin:0 0 12px}.attackActions{display:flex;gap:8px;margin-top:12px}.attackActions button{flex:1;padding:11px;border-radius:9px;border:1px solid #28506b;background:#092238;color:#fff;font-weight:900}.attackActions .danger{background:#9c2938;border-color:#d44958}.range{width:100%}
+.overlay{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:80;padding:16px}.overlay.show{display:flex}.modal{width:min(520px,100%);background:#071626;border:1px solid #2a4a66;border-radius:17px;padding:22px;box-shadow:0 30px 100px #000}.modal h2{margin:0 0 8px}.modal p{color:#9db1c3;line-height:1.8}.modalActions{display:flex;gap:8px;margin-top:16px}.modalActions button{flex:1;padding:12px;border-radius:10px;border:1px solid #294b66;background:#0a2033;color:#fff;font-weight:900}.modalActions .primary{background:#078fd5;border-color:#0aa8ef}.tradeRow{width:100%;padding:11px;background:#061a2b;color:#fff;border:1px solid #20445e;border-radius:10px;text-align:right;margin:6px 0}.tradeRow small{display:block;color:#91a7b8;margin-top:3px}.closeX{float:left;background:#16293c;color:#fff;border:1px solid #29455c;border-radius:8px;padding:6px 9px}
+.toast{position:fixed;left:18px;bottom:18px;background:#071b2c;border:1px solid #24506d;color:#fff;border-radius:10px;padding:12px 16px;z-index:100;display:none;box-shadow:0 12px 30px #000}.toast.show{display:block}
+@media(max-width:1000px){.nav{display:none}.gameLayout{grid-template-columns:220px 1fr}.gameLayout>.side:last-child{display:none}.cards{grid-template-columns:1fr 1fr}.topIn{justify-content:space-between}.brand{min-width:auto}.game{min-height:760px}}
+@media(max-width:700px){.top{height:64px}.brand b{font-size:17px}.brand small{font-size:9px}.topBtns .topBtn:nth-child(2){display:none}.heroTitle h1{font-size:30px}.cards,.quick,.panelGrid,.grid2,.grid3{grid-template-columns:1fr}.game{height:auto;min-height:100vh}.gameLayout{height:auto;grid-template-columns:1fr;padding:5px}.gameLayout>.side{display:block;max-height:250px}.mapWrap{height:62vh;min-height:480px}.gameBar{overflow:auto;white-space:nowrap}.stat{font-size:11px}.radial{width:190px}}
+
 </style>
 </head>
 <body>
@@ -162,6 +189,86 @@ button{cursor:pointer;border:0}
  <h2 id="mtitle">Open Tray</h2><p id="mtext"></p>
  <div id="loginForm" style="display:none"><input class="input" id="username" placeholder="نام بازیکن"><button class="primary" onclick="login()">ورود به Open Tray</button></div>
 </div></div>
+<div class="toast" id="toast"></div>
+
+<section id="lobbyScreen" class="screen hero">
+<div class="wrap">
+  <div class="panel" style="margin-top:20px">
+    <div class="row" style="justify-content:space-between"><div><h2 id="lobbyNameView">لابی</h2><p class="muted">منتظر بازیکن‌ها بمان یا بازی را شروع کن.</p></div><div class="codeBox" style="min-width:240px;margin:0"><span>کد لابی</span><b id="lobbyCode">------</b></div></div>
+    <div class="grid3" style="margin-top:14px"><div class="res"><small>نقشه</small><b id="lobbyMap">جهان</b></div><div class="res"><small>بازیکن</small><b id="playerCount">0/0</b></div><div class="res"><small>تنظیمات</small><b id="lobbySettings" style="font-size:11px">—</b></div></div>
+  </div>
+  <div class="panelGrid">
+    <div class="panel"><h3>بازیکن‌ها</h3><div id="playerList"></div><div id="hostTools" style="display:none;margin-top:15px"><button class="bigAction primary" id="startBtn" style="width:100%">▶ شروع بازی</button></div></div>
+    <div class="panel"><h3>چت آنلاین</h3><div class="chat" id="chat"></div><div class="chatInput"><input class="field" id="chatInput" maxlength="300" placeholder="پیام..."><button class="send" id="sendChat">ارسال</button></div></div>
+  </div>
+</div>
+</section>
+
+<section id="gameScreen" class="screen game">
+  <div class="gameBar">
+    <span class="gameCode">کد <span id="gameCode">------</span></span>
+    <span class="stat">🪙 طلا <b id="gold">0</b></span><span class="stat">⚔️ نیرو <b id="troops">0/0</b></span><span class="stat">🏙️ شهر <b id="cities">0</b></span><span class="stat">⚓ <b id="anchor">خاموش</b></span><span class="stat">🌐 کشور <b id="owned">0</b></span>
+    <b class="gameMapName" id="gameMapName">جهان</b><button class="topBtn" onclick="openModal('statsModal');renderStats()">جدول</button><button class="topBtn" onclick="leaveLobby()">خروج</button>
+  </div>
+  <div class="gameLayout">
+    <aside class="side">
+      <h3>⚔️ کنترل کشور</h3><p class="muted">روی کشور خودت بزن؛ منوی ۴ گزینه‌ای باز می‌شود.</p>
+      <div id="selectedCard" class="countryCard"><b>کشوری انتخاب نشده</b><small>کشور را روی نقشه لمس یا کلیک کن.</small></div>
+      <div class="resource"><div class="res"><small>درصد حمله</small><b id="liveAttack">50%</b></div><div class="res"><small>ظرفیت نیرو</small><b id="capNote">با شهر ↑</b></div></div>
+      <div class="countryCard"><b>قانون نیرو</b><small>حمله بخشی از نیرو را مصرف می‌کند. شهرها ظرفیت کل نیروی تو را بیشتر می‌کنند.</small></div>
+      <div class="countryCard"><b>اقتصاد</b><small>فتح کشور +۳۰ طلا • شهر ۱۰۰ طلا • لنگر ۱۲۰ طلا • کشتی ۲۰ طلا و مقصد ۵۰ طلا دریافت می‌کند.</small></div>
+    </aside>
+    <div class="mapWrap" id="mapWrap">
+      <canvas class="mapCanvas" id="mapCanvas"></canvas>
+      <div class="mapHint" id="mapHint">روی یک کشور برو</div>
+      <div class="mapTools"><button id="mapZoomIn">+</button><button id="mapZoomOut">−</button><button id="mapReset">⟳</button></div>
+    </div>
+    <aside class="side">
+      <h3>💬 چت زنده</h3><div class="chat" id="gameChat"></div>
+      <div class="chatInput"><input class="field" id="gameChatInput" maxlength="300" placeholder="پیام..."><button class="send" id="gameSend">ارسال</button></div>
+      <h3 style="margin-top:18px">🏆 بازیکن‌ها</h3><div id="leaderboard"></div>
+    </aside>
+  </div>
+</section>
+
+<div id="radial" class="radial">
+  <div class="radialTitle" id="selectedName">کشور</div><div class="radialInfo" id="selectedInfo">—</div>
+  <div class="radialGrid">
+    <button id="radialAttack">⚔️ حمله</button><button id="buildBtn">🏗️ ساخت‌وساز</button><button id="anchorBtn">⚓ لنگر</button><button id="tradeBtn">🚢 تبادل</button>
+  </div><button id="radialCancel" class="topBtn" style="width:100%;margin-top:7px">بستن</button>
+</div>
+
+<div id="attackPanel" class="attackPanel">
+  <h3>⚔️ انتخاب حمله</h3><p class="muted">درصد حمله نیرو: <b id="attackValue">50%</b></p>
+  <input id="attackPercent" class="range" type="range" min="10" max="90" value="50">
+  <select id="attackTarget" class="field" style="margin-top:12px"></select>
+  <div id="attackHint" class="countryCard">کشور هدف را انتخاب کن</div>
+  <div class="attackActions"><button class="danger" id="confirmAttack">حمله</button><button onclick="hideRadial()">لغو</button></div>
+</div>
+
+<div id="createModal" class="overlay"><div class="modal">
+  <button class="closeX" id="closeCreate">×</button><h2>ساخت لابی</h2><p>تنظیمات بازی را انتخاب کن؛ بعد یک کد ۶ رقمی برای لابی ساخته می‌شود.</p>
+  <div class="control"><div class="label">نام لابی</div><input id="lobbyName" class="field" placeholder="نبرد جهانی"></div>
+  <div class="grid2"><div class="control"><div class="label">نقشه</div><select id="createMap" class="field"><option value="world">🌍 جهان</option><option value="asia">🌏 آسیا</option><option value="europe">🌍 اروپا</option></select></div><div class="control"><div class="label">حداکثر بازیکن</div><select id="maxPlayers" class="field"><option>4</option><option selected>6</option><option>8</option><option>10</option><option>12</option></select></div></div>
+  <div class="grid2"><div class="control"><div class="label">تعداد ربات</div><select id="botCount" class="field"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></div><div class="control"><div class="label">سختی ربات</div><select id="botDifficulty" class="field"><option value="easy">آسان</option><option value="normal" selected>متوسط</option><option value="hard">سخت</option></select></div></div>
+  <label class="check"><input id="randomSpawn" type="checkbox" checked> اسپان تصادفی برای بازیکن‌ها</label>
+  <div class="control" style="margin-top:12px"><div class="label">درصد حمله نیرو: <b id="attackValue">50%</b></div><input id="attackPercent" class="range" type="range" min="10" max="90" value="50"></div>
+  <div class="modalActions"><button class="primary" id="createBtn">ساخت و ورود</button><button id="closeCreate2" onclick="closeModal('createModal')">لغو</button></div>
+</div></div>
+
+<div id="joinModal" class="overlay"><div class="modal">
+  <button class="closeX" id="closeJoin">×</button><h2>پیوستن به لابی</h2><p>کد لابی بازیکن را وارد کن؛ همان بازیکن و تو در یک بازی قرار می‌گیرید.</p>
+  <input id="joinCode" class="field" maxlength="6" placeholder="مثلاً 7K4P2M" style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-weight:900">
+  <div class="modalActions"><button class="primary" id="joinCodeBtn">ورود با کد</button><button onclick="closeModal('joinModal');refreshLobbies()">لغو</button></div>
+  <hr style="border:0;border-top:1px solid #17324b;margin:18px 0"><h3>لابی‌های آماده</h3><div id="lobbyList"></div>
+</div></div>
+
+<div id="loginModal" class="overlay"><div class="modal"><button class="closeX" id="closeLogin">×</button><h2>نام بازیکن</h2><p>برای اینکه در لابی و بازی شناخته شوی، نامت را وارد کن.</p><input id="nameInput" class="field" maxlength="22"><div class="modalActions"><button class="primary" id="saveName">ذخیره</button><button onclick="closeModal('loginModal')">لغو</button></div></div></div>
+
+<div id="tradeModal" class="overlay"><div class="modal"><button class="closeX" id="closeTrade">×</button><h2>⚓ تبادل دریایی</h2><p>بازیکن دارای لنگر را انتخاب کن. کشتی حرکت می‌کند و ۵۰ طلا به مقصد می‌رسد.</p><div id="tradeList"></div></div></div>
+
+<div id="statsModal" class="overlay"><div class="modal"><button class="closeX" id="closeStats">×</button><h2>🏆 جدول لابی</h2><div id="leaderboard"></div></div></div>
+
 <div class="toast" id="toast"></div>
 
 <div class="overlay" id="infoModal"><div class="modal"><button class="closeX" onclick="closeModal('infoModal')">×</button><h2>Open Tray</h2><p>این بخش فعلاً در دست ساخت است.</p></div></div>
