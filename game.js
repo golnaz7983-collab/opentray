@@ -74,6 +74,8 @@ function bindUI(){
   $('startBtn').onclick=startGame;
   $('sendChat').onclick=sendChat;
   $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+  $('gameSend').onclick=sendGameChat;
+  $('gameChatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendGameChat()});
   $('saveName').onclick=setPlayerName;
   $('attackPercent').oninput=()=>{$('attackValue').textContent=$('attackPercent').value+'%'; if(state.lobby) $('liveAttack').textContent=$('attackPercent').value+'%'};
   document.querySelectorAll('[data-map]').forEach(b=>b.onclick=()=>selectMap(b.dataset.map));
@@ -192,12 +194,20 @@ function subscribeLobby(){
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'opentray_chat',filter:'lobby_id=eq.'+state.lobby.id},payload=>{
       $('chat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('chat').scrollTop=$('chat').scrollHeight;
+      if($('gameChat')){ $('gameChat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('gameChat').scrollTop=$('gameChat').scrollHeight; }
     }).subscribe();
 }
 async function sendChat(){
   const text=$('chatInput').value.trim();
   if(!text||!state.lobby)return;
   $('chatInput').value='';
+  const {error}=await supabase.from('opentray_chat').insert({lobby_id:state.lobby.id,player_key:state.me.key,player_name:state.me.name,message:text.slice(0,300)});
+  if(error)toast('ارسال پیام نشد');
+}
+async function sendGameChat(){
+  const text=$('gameChatInput').value.trim();
+  if(!text||!state.lobby)return;
+  $('gameChatInput').value='';
   const {error}=await supabase.from('opentray_chat').insert({lobby_id:state.lobby.id,player_key:state.me.key,player_name:state.me.name,message:text.slice(0,300)});
   if(error)toast('ارسال پیام نشد');
 }
@@ -244,7 +254,7 @@ async function startClientGame(){
   drawMap();
   renderStats();
   loadChat();
-  if(state.lobby.host_key===state.me.key && !state.hostTimer) state.hostTimer=setInterval(botTick,5000);
+  if(state.lobby.host_key===state.me.key && !state.hostTimer) state.hostTimer=setInterval(hostTick,5000);
 }
 function setupMap(){
   const c=$('mapCanvas'), rect=c.getBoundingClientRect(), dpr=devicePixelRatio||1;
@@ -371,6 +381,8 @@ async function confirmAttack(){
   else target.troops=Math.max(1,target.troops-Math.max(1,Math.floor(send*.35)));
   gs.updated=Date.now();
   await saveGame(gs);
+  const me=state.players.find(p=>p.player_key===state.me.key);
+  if(me){me.gold+=won?30:0;await syncPlayer(me)}
   hideRadial();toast(won?'⚔️ کشور فتح شد +۳۰ طلا':'🛡️ حمله دفع شد');
   renderStats();
 }
@@ -429,6 +441,21 @@ function animateShip(a,b,done){
   const start=performance.now(),dur=2300;
   function step(t){const q=Math.min(1,(t-start)/dur),e=q*q*(3-2*q),x=p1[0]+(p2[0]-p1[0])*e,y=p1[1]+(p2[1]-p1[1])*e;ship.style.transform='translate('+(x-14)+'px,'+(y-14)+'px)';if(q<1)requestAnimationFrame(step);else{ship.remove();done()}}
   requestAnimationFrame(step);
+}
+async function hostTick(){
+  if(!state.lobby?.game_state||state.lobby.host_key!==state.me.key)return;
+  const gs=clone(state.lobby.game_state);
+  for(const p of state.players){
+    const owned=Object.values(gs.countries||{}).filter(c=>c.owner===p.player_key);
+    const cap=Math.max(20,p.max_troops||100);
+    const total=owned.reduce((n,c)=>n+(c.troops||0),0);
+    const room=Math.max(0,cap-total);
+    let left=room;
+    owned.forEach(c=>{if(left>0){const add=Math.min(left,1+(c.cities||0));c.troops=(c.troops||0)+add;left-=add}});
+    if(p.cities>0){p.gold+=p.cities*2;await syncPlayer(p)}
+  }
+  await saveGame(gs);
+  await botTick();
 }
 async function botTick(){
   if(!state.lobby?.game_state||state.lobby.host_key!==state.me.key)return;
