@@ -140,18 +140,5 @@
 
 <div class="toast" id="toast"></div>
 <script src="game.js"></script>
-<script>
-const _sendGame=document.getElementById('gameSend'),_gameInput=document.getElementById('gameChatInput');
-async function gameChatSend(){
-  const t=_gameInput.value.trim(); if(!t||!state.lobby)return; _gameInput.value='';
-  const {error}=await supabase.from('opentray_chat').insert({lobby_id:state.lobby.id,player_key:state.me.key,player_name:state.me.name,message:t.slice(0,300)});
-  if(error)toast('ارسال پیام نشد');
-}
-_sendGame.onclick=gameChatSend;_gameInput.addEventListener('keydown',e=>{if(e.key==='Enter')gameChatSend()});
-const oldLoadChat=loadChat;
-loadChat=async function(){await oldLoadChat();const {data}=await supabase.from('opentray_chat').select('*').eq('lobby_id',state.lobby.id).order('created_at',{ascending:true}).limit(80);$('gameChat').innerHTML=(data||[]).map(chatHtml).join('');$('gameChat').scrollTop=$('gameChat').scrollHeight};
-const oldSubscribe=subscribeLobby;
-subscribeLobby=function(){oldSubscribe();if(state.chatChannel)state.chatChannel.on('postgres_changes',{event:'INSERT',schema:'public',table:'opentray_chat',filter:'lobby_id=eq.'+state.lobby.id},payload=>{$('gameChat').insertAdjacentHTML('beforeend',chatHtml(payload.new));$('gameChat').scrollTop=$('gameChat').scrollHeight})};
-</script>
 </body>
 </html>
