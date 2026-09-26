@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open Tray — بازی</title>
+<meta name="description" content="Open Tray - صفحه اصلی بازی">
+<style>
+:root{
+  --bg:#050d1d;--panel:#071326e8;--panel2:#0b1a31f2;--line:#1d3555;
+  --blue:#0799e6;--blue2:#20b8ff;--text:#f5f8fc;--muted:#9eabbc;--green:#3bd67f;--red:#ff5c64;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;background:#061021;color:var(--text)}
+body{overflow-x:hidden}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+.top{
+  position:sticky;top:0;z-index:20;height:82px;background:rgba(5,10,20,.96);
+  border-bottom:1px solid #1b2b43;display:flex;align-items:center
+}
+.nav{width:min(1160px,94%);margin:auto;display:flex;align-items:center;gap:28px}
+.logo{display:flex;align-items:center;gap:11px;min-width:205px}
+.logo-mark{width:34px;height:34px;position:relative}
+.logo-mark:before,.logo-mark:after{content:"";position:absolute;border:5px solid var(--blue);width:14px;height:14px}
+.logo-mark:before{left:0;top:0;border-right:0;border-bottom:0}.logo-mark:after{right:0;bottom:0;border-left:0;border-top:0}
+.logo b{font-size:22px;letter-spacing:.5px}.logo small{display:block;color:var(--blue);font-weight:800;margin-top:2px}
+.links{display:flex;align-items:center;gap:25px;flex:1;justify-content:center}
+.links a{color:#c8d0dc;text-decoration:none;font-weight:700;font-size:15px;padding:12px 4px;transition:.2s}
+.links a:hover,.links a.active{color:var(--blue2)}
+.login{background:#101c30;border:1px solid #40506a;color:#fff;border-radius:24px;padding:10px 18px;font-weight:800}
+.menu{display:none;background:none;color:#fff;font-size:26px}
+
+.hero{
+  min-height:calc(100vh - 82px);position:relative;padding:34px 0 60px;
+  background:
+   radial-gradient(circle at 75% 15%,rgba(20,180,255,.18),transparent 30%),
+   linear-gradient(rgba(8,18,34,.45),rgba(4,10,20,.88)),
+   repeating-linear-gradient(30deg,transparent 0 78px,rgba(64,117,156,.10) 79px 81px),
+   repeating-linear-gradient(150deg,transparent 0 78px,rgba(64,117,156,.08) 79px 81px),
+   #0a1830;
+}
+.hero:before{
+ content:"";position:absolute;inset:0;opacity:.25;pointer-events:none;
+ background:radial-gradient(ellipse at 20% 30%,#fff 0 1px,transparent 2px),radial-gradient(ellipse at 80% 70%,#fff 0 1px,transparent 2px);
+ background-size:170px 150px,220px 190px;
+}
+.wrap{width:min(930px,92%);margin:auto;position:relative}
+.toolbar{display:flex;gap:12px;margin:0 0 24px}
+.country{flex:1;background:#071427;border:1px solid #18304e;border-radius:10px;height:48px;display:flex;align-items:center;padding:0 18px;font-weight:900}
+.country span{color:#aeb9c9;margin-left:10px}
+.flag{width:70px;height:48px;border-radius:8px;background:linear-gradient(90deg,#d82d2d 0 33%,#fff 33% 67%,#d82d2d 67%);display:grid;place-items:center;color:#d82d2d;font-size:22px;border:1px solid #26384e}
+.filter{height:48px;padding:0 18px;border-radius:9px;background:#071427;color:#fff;border:1px solid #18304e;font-weight:800}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card{min-height:128px;border-radius:16px;overflow:hidden;position:relative;background:#071427;border:1px solid #193351;box-shadow:0 12px 30px #0005}
+.card .map{
+ position:absolute;inset:0;background:
+ radial-gradient(circle at 20% 30%,#e8e4b5 0 7%,transparent 8%),
+ radial-gradient(circle at 72% 62%,#9fa97c 0 11%,transparent 12%),
+ linear-gradient(145deg,#182e42,#0c1a2a 55%,#1e3644);
+ opacity:.8;
+}
+.card:nth-child(2) .map{background:radial-gradient(circle at 72% 25%,#d8d9a2 0 10%,transparent 11%),linear-gradient(145deg,#365247,#132d35 55%,#182438)}
+.card:nth-child(3) .map{background:radial-gradient(circle at 28% 60%,#d6d5a0 0 13%,transparent 14%),linear-gradient(145deg,#314b43,#101d2b 55%,#34443b)}
+.card:nth-child(4) .map{background:radial-gradient(circle at 70% 35%,#e4dfac 0 14%,transparent 15%),linear-gradient(145deg,#3d574d,#172a35 55%,#253a46)}
+.card:after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.92))}
+.badge{position:absolute;top:9px;right:9px;background:#099ee9;padding:6px 9px;border-radius:5px;font-size:12px;font-weight:900;z-index:2}
+.players{position:absolute;left:10px;top:57px;z-index:2;background:#000a;padding:5px 8px;border-radius:5px;font-size:11px}
+.card h3,.card p{position:absolute;right:13px;z-index:3;margin:0}
+.card h3{bottom:27px;font-size:17px}.card p{bottom:9px;color:#c1c8d1;font-size:11px}
+.solo{margin-top:16px;height:56px;border-radius:8px;background:linear-gradient(90deg,#078cd4,#079ee7);display:grid;place-items:center;font-size:18px;font-weight:900;box-shadow:0 7px 20px #008de744}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.action{height:56px;border-radius:8px;background:#071427;color:#fff;border:1px solid #1a304e;font-weight:900;transition:.2s}
+.action:hover{transform:translateY(-2px);border-color:#168fd0;background:#0b1b31}
+.footer{margin-top:40px;padding:24px 0;border-top:1px solid #1c3049;color:#8e9aac;text-align:center;font-size:12px}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;z-index:50;padding:18px}
+.modal.show{display:flex}
+.box{width:min(480px,100%);background:#081426;border:1px solid #24405f;border-radius:16px;padding:24px;box-shadow:0 25px 80px #000}
+.box h2{margin:0 0 10px}.box p{color:#aab5c5;line-height:1.8}
+.close{float:left;background:#18263b;color:#fff;border-radius:8px;padding:7px 11px}
+.input{width:100%;padding:13px;border-radius:9px;border:1px solid #29425f;background:#050e1d;color:#fff;margin:10px 0}
+.primary{width:100%;padding:13px;border-radius:9px;background:#079be7;color:#fff;font-weight:900;margin-top:8px}
+.toast{position:fixed;left:20px;bottom:20px;background:#09172a;border:1px solid #1e4163;padding:12px 16px;border-radius:10px;display:none;z-index:80}
+@media(max-width:900px){
+ .links{display:none}.menu{display:block}.nav{justify-content:space-between}.logo{min-width:0}
+ .cards{grid-template-columns:1fr}.actions{grid-template-columns:1fr}
+ .top{height:70px}.hero{min-height:calc(100vh - 70px)}
+}
+</style>
+</head>
+<body>
+<header class="top">
+ <nav class="nav">
+  <button class="menu" onclick="showToast('منوی موبایل آماده است')">☰</button>
+  <div class="logo"><div class="logo-mark"></div><div><b>OPEN TRAY</b><small>505 In Match</small></div></div>
+  <div class="links">
+   <a class="active" href="#games">بازی</a><a href="#news" onclick="info('اخبار')">اخبار</a>
+   <a href="#download" onclick="info('دانلود')">دانلود</a><a href="#shop" onclick="info('فروشگاه')">فروشگاه</a>
+   <a href="#settings" onclick="info('تنظیمات')">تنظیمات</a><a href="#ranking" onclick="info('جدول رده‌بندی')">جدول رده‌بندی</a>
+   <a href="#clans" onclick="info('قبیله‌ها')">قبیله‌ها</a><a href="#help" onclick="info('راهنما')">راهنما</a>
+  </div>
+  <button class="login" onclick="openLogin()">♙ ورود</button>
+ </nav>
+</header>
+
+<main class="hero" id="games">
+ <div class="wrap">
+  <div class="toolbar">
+   <div class="country"><span>CAN</span> Canada</div>
+   <button class="filter" onclick="info('انتخاب پوسته')">انتخاب پوسته</button>
+   <div class="flag">✕</div>
+  </div>
+
+  <section class="cards">
+   <article class="card" onclick="join('گذرگاه شمال غربی')"><div class="map"></div><span class="badge">47 ثانیه</span><span class="players">5/80 👥</span><h3>گذرگاه شمال‌غربی</h3><p>مبارزه آزاد</p></article>
+   <article class="card" onclick="join('سومرل')"><div class="map"></div><span class="badge">16 ثانیه</span><span class="players">6/12 👥</span><h3>سومرل</h3><p>مبارزه آزاد</p></article>
+   <article class="card" onclick="join('قطب جنوب بدون یخ')"><div class="map"></div><span class="badge">15 ثانیه</span><span class="players">7/30 👥</span><h3>قطب جنوب بدون یخ</h3><p>ضریب طلا ×2</p></article>
+   <article class="card" onclick="join('WORLD INVERTED')"><div class="map"></div><span class="badge">47 ثانیه</span><span class="players">4/20 👥</span><h3>WORLD INVERTED</h3><p>نبرد 4 نفره</p></article>
+  </section>
+
+  <button class="solo" onclick="join('بازی انفرادی')">انفرادی</button>
+  <div class="actions">
+   <button class="action" onclick="createGame()">ساخت لابی</button>
+   <button class="action" onclick="info('رنک')">رنک</button>
+   <button class="action" onclick="join('لابی دوستان')">پیوستن به لابی</button>
+  </div>
+
+  <footer class="footer">OPEN TRAY • نسخه آزمایشی منوی بازی<br><span>این نسخه فقط منوی اصلی است؛ بخش بازی‌ها و قابلیت‌های اصلی در مرحله بعد اضافه می‌شوند.</span></footer>
+ </div>
+</main>
+
+<div class="modal" id="modal"><div class="box">
+ <button class="close" onclick="closeModal()">بستن</button>
+ <h2 id="mtitle">Open Tray</h2><p id="mtext"></p>
+ <div id="loginForm" style="display:none"><input class="input" id="username" placeholder="نام بازیکن"><button class="primary" onclick="login()">ورود به Open Tray</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const modal=document.getElementById('modal'),toast=document.getElementById('toast');
+function openModal(title,text,login=false){document.getElementById('mtitle').textContent=title;document.getElementById('mtext').textContent=text;document.getElementById('loginForm').style.display=login?'block':'none';modal.classList.add('show')}
+function closeModal(){modal.classList.remove('show')}
+function info(x){event?.preventDefault();openModal(x,'این بخش در نسخه بعدی Open Tray فعال می‌شود. فعلاً منوی اصلی آماده شده است.')}
+function join(x){openModal('پیوستن به '+x,'اتصال به این لابی در مرحله بعد به بازی واقعی وصل می‌شود.')}
+function createGame(){openModal('ساخت لابی','در نسخه بعدی می‌توانی نام لابی، نقشه، تعداد بازیکن و حالت بازی را انتخاب کنی.')}
+function openLogin(){openModal('ورود به Open Tray','نام بازیکن را وارد کن.',true)}
+function login(){const n=document.getElementById('username').value.trim();if(!n)return showToast('نام بازیکن را وارد کن');localStorage.openTrayName=n;closeModal();showToast('خوش آمدی '+n+' 👋')}
+function showToast(t){toast.textContent=t;toast.style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display='none',2600)}
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+</script>
+</body>
+</html>
