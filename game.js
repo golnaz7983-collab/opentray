@@ -99,7 +99,7 @@ function bindUI(){
 function selectMap(map){
   if(!MAPS[map])return;
   document.querySelectorAll('[data-map]').forEach(b=>b.classList.toggle('active',b.dataset.map===map));
-  $('mapTitle').textContent=MAPS[map].label;
+  if($('mapTitle')) $('mapTitle').textContent=MAPS[map].label;
   if(state.lobby && state.lobby.status==='waiting'){
     state.lobby.map_id=map;
     $('lobbyMap').textContent=MAPS[map].label;
