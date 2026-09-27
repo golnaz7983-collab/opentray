@@ -12,6 +12,7 @@ const BOT_NAMES = ['آلفا','بتا','گاما','دلتا','سیگما','اُ�
 const state = {
   me:null, lobby:null, players:[], features:[], mapFeatures:[], projection:null, path:null,
   colorCanvas:null, colorCtx:null, canvas:null, ctx:null, selected:null, attackMode:false,
+  mapView:{zoom:1,x:0,y:0}, dragging:false, dragMoved:false, dragStartX:0, dragStartY:0, dragPanX:0, dragPanY:0, suppressClick:false,
   chatChannel:null, lastCode:'', world:null, started:false, hostTimer:null, attackPercent:50
 };
 
@@ -102,9 +103,9 @@ function bindUI(){
   $('radialCancel').onclick=hideRadial;
   $('mapCanvas').addEventListener('click',onMapClick);
   $('mapCanvas').addEventListener('mousemove',onMapMove);
-  $('mapZoomOut').onclick=()=>zoomMap(0.88);
+  $('mapZoomOut').onclick=()=>zoomMap(.88);
   $('mapZoomIn').onclick=()=>zoomMap(1.12);
-  $('mapReset').onclick=()=>drawMap();
+  $('mapReset').onclick=resetMapView;
   $('attackTarget').addEventListener('change',renderAttackHint);
 }
 function selectMap(map){
@@ -258,7 +259,7 @@ async function startGame(){
   window.location.href='game.html?code='+encodeURIComponent(state.lobby.code);
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-async async function startClientGame(){
+async function startClientGame(){
   if(!state.lobby?.game_state){return}
   setScreen('gameScreen'); state.started=true; hideRadial();
   $('gameCode').textContent=state.lobby.code;
@@ -286,13 +287,64 @@ function setupMap(){
   state.colorCtx=state.colorCanvas.getContext('2d');
   return true;
 }
+function resetMapView(){
+  state.mapView={zoom:1,x:0,y:0};
+  drawMap();
+}
+function zoomMap(f,cx,cy){
+  if(!state.projection)return;
+  const old=state.mapView.zoom;
+  const next=Math.max(.55,Math.min(5,old*f));
+  if(next===old)return;
+  if(Number.isFinite(cx)&&Number.isFinite(cy)){
+    const r=$('mapCanvas').getBoundingClientRect();
+    const px=cx-r.left,py=cy-r.top;
+    state.mapView.x=px-(px-state.mapView.x)*(next/old);
+    state.mapView.y=py-(py-state.mapView.y)*(next/old);
+  }
+  state.mapView.zoom=next;
+  drawMap();
+}
+function setupMapPointerControls(){
+  const c=$('mapCanvas');
+  if(!c||c.dataset.pointerReady)return;
+  c.dataset.pointerReady='1';
+  c.style.touchAction='none';
+  c.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    state.dragging=true;state.dragMoved=false;
+    state.dragStartX=e.clientX;state.dragStartY=e.clientY;
+    state.dragPanX=state.mapView.x;state.dragPanY=state.mapView.y;
+    c.setPointerCapture?.(e.pointerId);
+  });
+  c.addEventListener('pointermove',e=>{
+    if(!state.dragging)return;
+    const dx=e.clientX-state.dragStartX,dy=e.clientY-state.dragStartY;
+    if(Math.hypot(dx,dy)>4)state.dragMoved=true;
+    state.mapView.x=state.dragPanX+dx;
+    state.mapView.y=state.dragPanY+dy;
+    drawMap();
+  });
+  const stop=e=>{
+    if(!state.dragging)return;
+    state.dragging=false;
+    if(state.dragMoved){state.suppressClick=true;setTimeout(()=>state.suppressClick=false,80)}
+    c.releasePointerCapture?.(e.pointerId);
+  };
+  c.addEventListener('pointerup',stop);
+  c.addEventListener('pointercancel',stop);
+  c.addEventListener('wheel',e=>{
+    e.preventDefault();
+    zoomMap(e.deltaY<0?1.12:.88,e.clientX,e.clientY);
+  },{passive:false});
+}
 function drawMap(){
   if(!state.features.length || !$('mapCanvas')) return;
   if(!state.canvas && !setupMap()) return;
   const c=state.canvas, rect=c.getBoundingClientRect(), w=rect.width,h=rect.height;
   const map=MAPS[state.lobby?.map_id||document.querySelector('[data-map].active')?.dataset.map||'world'];
   const center=map.center;
-  state.projection=d3.geoNaturalEarth1().scale(map.scale*(Math.min(w,900)/900)).translate([w/2,h/2]).center(center);
+  state.projection=d3.geoNaturalEarth1().scale(map.scale*(Math.min(w,900)/900)*state.mapView.zoom).translate([w/2+state.mapView.x,h/2+state.mapView.y]).center(center);
   state.path=d3.geoPath(state.projection,state.ctx);
   const filtered=state.features.filter(map.filter);
   state.mapFeatures=filtered;
@@ -307,10 +359,9 @@ function drawMap(){
   filtered.forEach((f,i)=>{
     const id=f.id||f.properties?.id; const st=countries[id];
     ctx.beginPath();state.path(f);
-    let fill='#173148';
-    if(st?.owner){const p=state.players.find(x=>x.player_key===st.owner);fill=p?.color||'#64748b'}
-    else if(st)fill='#24445a';
-    ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=st?.owner?'#d5f3ff66':'#8eb7cc55';ctx.lineWidth=0.65;ctx.stroke();
+    const fill=st?'#b8c7b0':'#aebcaf';
+    ctx.fillStyle=fill;ctx.fill();
+    ctx.strokeStyle='#52666f';ctx.lineWidth=.7;ctx.stroke();
   });
   if(state.selected){
     const f=state.mapFeatures.find(x=>(x.id||x.properties?.id)===state.selected);
@@ -343,6 +394,7 @@ function drawMarkers(){
   });
 }
 function onMapMove(e){
+  if(state.dragging)return;
   if(!state.projection||!state.colorCtx)return;
   const r=$('mapCanvas').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
   const pix=state.colorCtx.getImageData(Math.max(0,x),Math.max(0,y),1,1).data;const idx=pix[0]+pix[1]*256+pix[2]*65536;
@@ -350,6 +402,7 @@ function onMapMove(e){
   $('mapHint').textContent=f?'کشور: '+(f.properties?.name||'بدون نام'):'روی یک کشور برو';
 }
 function onMapClick(e){
+  if(state.suppressClick||state.dragMoved){state.dragMoved=false;return}
   if(!state.lobby?.game_state)return;
   const r=$('mapCanvas').getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
   const pix=state.colorCtx.getImageData(Math.max(0,x),Math.max(0,y),1,1).data;const idx=pix[0]+pix[1]*256+pix[2]*65536;
@@ -520,7 +573,7 @@ function renderStats(){
 function showAttackTarget(id){
   state.selected=id; hideRadial();$('attackPanel').classList.add('show');fillAttackTargets(id);
 }
-function zoomMap(f){if(!state.projection)return;const m=MAPS[state.lobby?.map_id||'world'];m.scale*=f;drawMap()}
+
 async function leaveLobby(){
   if(state.lobby){
     await supabase.from('opentray_players').delete().eq('lobby_id',state.lobby.id).eq('player_key',state.me.key);
@@ -565,10 +618,11 @@ function setupGamePage(){
   onEl('tradeBtn','click',openTrade);
   onEl('radialCancel','click',hideRadial);
   onEl('mapCanvas','click',onMapClick);
+  setupMapPointerControls();
   onEl('mapCanvas','mousemove',onMapMove);
   onEl('mapZoomOut','click',()=>zoomMap(.88));
   onEl('mapZoomIn','click',()=>zoomMap(1.12));
-  onEl('mapReset','click',()=>drawMap());
+  onEl('mapReset','click',resetMapView);
   onEl('attackTarget','change',renderAttackHint);
   if($('attackPercent')) $('attackPercent').oninput=()=>{state.attackPercent=Number($('attackPercent').value);$('attackValue').textContent=state.attackPercent+'%';$('liveAttack').textContent=state.attackPercent+'%'};
   $('fullscreenGate')?.classList.add('show');
