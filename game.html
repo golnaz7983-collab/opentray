@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open Tray — بازی آنلاین</title>
+<style>
+:root{--bg:#020913;--panel:#061423ee;--line:#18344e;--cyan:#13a8ef;--text:#f3f8ff;--muted:#8fa4ba}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#020913;color:var(--text);font-family:Tahoma,Arial,sans-serif;overflow:hidden}
+button,input,select{font:inherit}button{cursor:pointer}
+.game{position:fixed;inset:0;background:#020913;display:flex;flex-direction:column}
+.gameBar{height:62px;flex:0 0 62px;display:flex;align-items:center;gap:9px;padding:8px 12px;background:#061321;border-bottom:1px solid #17334e;z-index:20}
+.stat,.topBtn{background:#071a2a;border:1px solid #1b3b56;border-radius:9px;color:#fff;padding:8px 11px;font-size:12px;font-weight:900}
+.stat b{color:#62d5ff}.gameMapName{font-weight:900;font-size:17px;margin-right:auto}.gameCode{color:#5fd6ff;font-weight:900;letter-spacing:2px}
+.gameLayout{flex:1;min-height:0;display:grid;grid-template-columns:290px minmax(0,1fr) 290px;gap:8px;padding:8px}
+.side{background:#061423e8;border:1px solid var(--line);border-radius:14px;padding:12px;overflow:auto}
+.side h3{margin:0 0 10px}.muted{color:var(--muted);line-height:1.7}.countryCard{background:#04111e;border:1px solid #193751;border-radius:10px;padding:10px;margin:10px 0}.countryCard b{font-size:15px}.countryCard small{display:block;color:#8ea5b7;line-height:1.7;margin-top:4px}
+.resource{display:grid;grid-template-columns:1fr 1fr;gap:8px}.res{background:#061b2a;border:1px solid #1a3b54;border-radius:10px;padding:9px}.res small{display:block;color:#8299ac}.res b{display:block;margin-top:4px;font-size:16px}
+.mapWrap{position:relative;min-width:0;min-height:0;border:1px solid #173751;border-radius:14px;overflow:hidden;background:#04101b}
+.mapCanvas{width:100%;height:100%;display:block;touch-action:none}.mapHint{position:absolute;left:12px;top:12px;background:#03101bd9;border:1px solid #1e405c;color:#cce7f8;padding:7px 10px;border-radius:8px;font-size:12px;pointer-events:none}
+.mapTools{position:absolute;right:12px;top:12px;display:flex;gap:6px}.mapTools button{background:#061524dd;color:#fff;border:1px solid #2b4b65;border-radius:8px;padding:7px 10px}
+.chat{height:220px;overflow:auto;background:#03101b;border:1px solid #18334c;border-radius:12px;padding:10px}.msg{padding:7px 5px;border-bottom:1px solid #10253a;display:flex;gap:8px;line-height:1.6}.msg b{color:#5bcfff}.msg span{color:#d5e0ea}.chatInput{display:flex;gap:8px;margin-top:8px}.field{width:100%;background:#04101d;color:#fff;border:1px solid #24435f;border-radius:10px;padding:11px}.send{background:#0b92d9;color:#fff;border-radius:9px;padding:0 15px;font-weight:900;border:1px solid #18a8ee}
+.scoreRow{display:grid;grid-template-columns:12px 1fr auto auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid #112a40;font-size:12px}.scoreRow i{width:12px;height:12px;border-radius:50%;display:inline-block}.scoreRow span{color:#91a8ba}.scoreRow strong{color:#f8d36b}
+.radial{position:fixed;z-index:40;display:none;width:200px;background:#061626ef;border:1px solid #2a4d68;border-radius:16px;padding:10px;box-shadow:0 20px 70px #000}.radial.show{display:block}.radialTitle{font-weight:900;margin-bottom:8px}.radialInfo{font-size:11px;color:#91a9bb;line-height:1.6;margin-bottom:8px}.radialGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.radialGrid button{height:44px;border-radius:10px;background:#0a2033;color:#fff;border:1px solid #21435e;font-weight:900}.radialGrid button:disabled{opacity:.35;cursor:not-allowed}
+.attackPanel{position:fixed;z-index:45;left:50%;top:50%;transform:translate(-50%,-50%);display:none;width:min(420px,92vw);background:#061626f5;border:1px solid #2c536e;border-radius:16px;padding:18px;box-shadow:0 25px 90px #000}.attackPanel.show{display:block}.attackActions{display:flex;gap:8px;margin-top:12px}.attackActions button{flex:1;padding:11px;border-radius:9px;border:1px solid #28506b;background:#092238;color:#fff;font-weight:900}.attackActions .danger{background:#9c2938;border-color:#d44958}.range{width:100%}
+.overlay{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:80;padding:16px}.overlay.show{display:flex}.modal{width:min(520px,100%);background:#071626;border:1px solid #2a4a66;border-radius:17px;padding:22px;box-shadow:0 30px 100px #000}.modal h2{margin:0 0 8px}.modal p{color:#9db1c3;line-height:1.8}.closeX{float:left;background:#16293c;color:#fff;border:1px solid #29455c;border-radius:8px;padding:6px 9px}
+.tradeRow{width:100%;padding:11px;background:#061a2b;color:#fff;border:1px solid #20445e;border-radius:10px;text-align:right;margin:6px 0}.tradeRow small{display:block;color:#91a7b8;margin-top:3px}
+.toast{position:fixed;left:18px;bottom:18px;background:#071b2c;border:1px solid #24506d;color:#fff;border-radius:10px;padding:12px 16px;z-index:100;display:none}.toast.show{display:block}
+.ship{position:absolute;left:0;top:0;font-size:26px;pointer-events:none;z-index:8;filter:drop-shadow(0 4px 8px #000);transition:transform .05s linear}
+.fullscreenGate{position:fixed;inset:0;background:#020913ee;z-index:120;display:none;align-items:center;justify-content:center;padding:20px}.fullscreenGate.show{display:flex}.gateBox{width:min(480px,92vw);background:#071626;border:1px solid #2a4a66;border-radius:18px;padding:24px;text-align:center}.gateBox h2{margin-top:0}.gateBox p{color:#9db1c3;line-height:1.9}.gateBtn{width:100%;padding:14px;border:0;border-radius:10px;background:linear-gradient(135deg,#087ec8,#0aa9ec);color:#fff;font-weight:900}
+@media(max-width:1050px){.gameLayout{grid-template-columns:220px minmax(0,1fr)}.gameLayout>.side:last-child{display:none}}
+@media(max-width:720px){.gameBar{overflow:auto;white-space:nowrap}.gameLayout{grid-template-columns:1fr;padding:4px}.gameLayout>.side{display:none}.mapWrap{min-height:0}.gameMapName{margin-right:auto}.game{min-height:100dvh}}
+</style>
+</head>
+<body data-page="game">
+<div id="gameScreen" class="game">
+  <div class="gameBar">
+    <span class="gameCode">کد <span id="gameCode">------</span></span>
+    <span class="stat">🪙 طلا <b id="gold">0</b></span>
+    <span class="stat">⚔️ نیرو <b id="troops">0/0</b></span>
+    <span class="stat">🏙️ شهر <b id="cities">0</b></span>
+    <span class="stat">⚓ <b id="anchor">خاموش</b></span>
+    <span class="stat">🌐 کشور <b id="owned">0</b></span>
+    <b class="gameMapName" id="gameMapName">جهان</b>
+    <button class="topBtn" id="statsBtn">جدول</button>
+    <button class="topBtn" id="fullscreenBtn">⛶ تمام‌صفحه</button>
+    <button class="topBtn" id="leaveGameBtn">خروج</button>
+  </div>
+  <div class="gameLayout">
+    <aside class="side">
+      <h3>⚔️ کنترل کشور</h3>
+      <p class="muted">روی کشور بزن؛ منوی ۴ گزینه‌ای باز می‌شود.</p>
+      <div id="selectedCard" class="countryCard"><b>کشوری انتخاب نشده</b><small>کشور را روی نقشه لمس یا کلیک کن.</small></div>
+      <div class="resource"><div class="res"><small>درصد حمله</small><b id="liveAttack">50%</b></div><div class="res"><small>ظرفیت نیرو</small><b id="capNote">با شهر ↑</b></div></div>
+      <div class="countryCard"><b>اقتصاد</b><small>فتح کشور +۳۰ طلا • شهر ۱۰۰ طلا • لنگر ۱۲۰ طلا • کشتی ۲۰ طلا و مقصد ۵۰ طلا.</small></div>
+    </aside>
+    <div class="mapWrap" id="mapWrap">
+      <canvas class="mapCanvas" id="mapCanvas"></canvas>
+      <div class="mapHint" id="mapHint">روی یک کشور برو</div>
+      <div class="mapTools"><button id="mapZoomIn">+</button><button id="mapZoomOut">−</button><button id="mapReset">⟳</button></div>
+    </div>
+    <aside class="side">
+      <h3>💬 چت زنده</h3><div class="chat" id="gameChat"></div>
+      <div class="chatInput"><input class="field" id="gameChatInput" maxlength="300" placeholder="پیام..."><button class="send" id="gameSend">ارسال</button></div>
+      <h3 style="margin-top:18px">🏆 بازیکن‌ها</h3><div id="leaderboard"></div>
+    </aside>
+  </div>
+</div>
+<div id="radial" class="radial"><div class="radialTitle" id="selectedName">کشور</div><div class="radialInfo" id="selectedInfo">—</div><div class="radialGrid"><button id="radialAttack">⚔️ حمله</button><button id="buildBtn">🏗️ شهر</button><button id="anchorBtn">⚓ لنگر</button><button id="tradeBtn">🚢 تبادل</button></div><button id="radialCancel" class="topBtn" style="width:100%;margin-top:7px">بستن</button></div>
+<div id="attackPanel" class="attackPanel"><h3>⚔️ انتخاب حمله</h3><p class="muted">درصد حمله نیرو: <b id="attackValue">50%</b></p><input id="attackPercent" class="range" type="range" min="10" max="90" value="50"><select id="attackTarget" class="field" style="margin-top:12px"></select><div id="attackHint" class="countryCard">کشور هدف را انتخاب کن</div><div class="attackActions"><button class="danger" id="confirmAttack">حمله</button><button id="cancelAttack">لغو</button></div></div>
+<div id="tradeModal" class="overlay"><div class="modal"><button class="closeX" id="closeTrade">×</button><h2>⚓ تبادل دریایی</h2><p>بازیکن دارای لنگر را انتخاب کن. کشتی حرکت می‌کند و ۵۰ طلا به مقصد می‌رسد.</p><div id="tradeList"></div></div></div>
+<div id="statsModal" class="overlay"><div class="modal"><button class="closeX" id="closeStats">×</button><h2>🏆 جدول بازی</h2><div id="leaderboard"></div></div></div>
+<div class="fullscreenGate" id="fullscreenGate"><div class="gateBox"><h2>🎮 Open Tray</h2><p>بازی آماده است. برای تجربه تمام‌صفحه، روی شروع بزن.</p><button class="gateBtn" id="startFullscreen">شروع تمام‌صفحه</button></div></div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="game.js"></script>
+</body>
+</html>
