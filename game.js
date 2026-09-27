@@ -55,8 +55,8 @@ async function init(){
 }
 async function loadWorld(){
   const urls=[
-    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',
-    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'
+    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json',
+    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
   ];
   for(const url of urls){
     try{
@@ -272,6 +272,8 @@ async function startClientGame(){
   $('mapCanvas').height=$('mapCanvas').clientHeight*devicePixelRatio;
   $('mapCanvas').style.width='100%'; $('mapCanvas').style.height='100%';
   await refreshPlayers();
+  setupMap();
+  setupMapPointerControls();
   drawMap();
   renderStats();
   loadChat();
@@ -359,9 +361,11 @@ function drawMap(){
   filtered.forEach((f,i)=>{
     const id=f.id||f.properties?.id; const st=countries[id];
     ctx.beginPath();state.path(f);
-    const fill=st?'#b8c7b0':'#aebcaf';
-    ctx.fillStyle=fill;ctx.fill();
-    ctx.strokeStyle='#52666f';ctx.lineWidth=.7;ctx.stroke();
+    ctx.fillStyle='#b8c7b0';ctx.fill();
+    const owner=st?.owner ? state.players.find(p=>p.player_key===st.owner) : null;
+    ctx.strokeStyle=owner?.color||'#52666f';
+    ctx.lineWidth=owner ? 2.2 : .7;
+    ctx.stroke();
   });
   if(state.selected){
     const f=state.mapFeatures.find(x=>(x.id||x.properties?.id)===state.selected);
@@ -618,14 +622,14 @@ function setupGamePage(){
   onEl('tradeBtn','click',openTrade);
   onEl('radialCancel','click',hideRadial);
   onEl('mapCanvas','click',onMapClick);
-  setupMapPointerControls();
   onEl('mapCanvas','mousemove',onMapMove);
   onEl('mapZoomOut','click',()=>zoomMap(.88));
   onEl('mapZoomIn','click',()=>zoomMap(1.12));
   onEl('mapReset','click',resetMapView);
   onEl('attackTarget','change',renderAttackHint);
   if($('attackPercent')) $('attackPercent').oninput=()=>{state.attackPercent=Number($('attackPercent').value);$('attackValue').textContent=state.attackPercent+'%';$('liveAttack').textContent=state.attackPercent+'%'};
-  $('fullscreenGate')?.classList.add('show');
+  // Do not block the game behind a fullscreen overlay.
+  $('fullscreenGate')?.classList.remove('show');
   fetchLobbyForGame(code);
 }
 async function fetchLobbyForGame(code){
