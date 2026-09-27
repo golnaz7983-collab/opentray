@@ -206,7 +206,7 @@ function subscribeLobby(){
       if(payload.new){state.lobby={...state.lobby,...payload.new}; updateTop(); if(state.lobby.status==='playing'){if(document.body.dataset.page==='game') startClientGame(); else location.href='game.html?code='+encodeURIComponent(state.lobby.code)}}
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'opentray_chat',filter:'lobby_id=eq.'+state.lobby.id},payload=>{
-      $('chat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('chat').scrollTop=$('chat').scrollHeight;
+      if($('chat')){ $('chat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('chat').scrollTop=$('chat').scrollHeight; }
       if($('gameChat')){ $('gameChat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('gameChat').scrollTop=$('gameChat').scrollHeight; }
     }).subscribe();
 }
@@ -396,7 +396,7 @@ async function confirmAttack(){
   if(!fromId||!targetId){toast('هدف را انتخاب کن');return}
   const gs=clone(state.lobby.game_state), from=gs.countries[fromId], target=gs.countries[targetId];
   if(!from||from.owner!==state.me.key||!target){toast('حرکت نامعتبر است');return}
-  const send=Math.max(1,Math.floor(from.troops*Number(state.lobby.attack_percent)/100));
+  const send=Math.max(1,Math.floor(from.troops*Number(state.attackPercent||state.lobby.attack_percent||50)/100));
   from.troops=Math.max(1,from.troops-send);
   const power=send*(0.85+Math.random()*0.45), defense=target.troops*(0.75+Math.random()*0.5);
   let won=power>=defense;
