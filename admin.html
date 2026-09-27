@@ -42,7 +42,7 @@ body{min-height:100vh;background:radial-gradient(circle at 50% 0,#0c3554 0,trans
         <div class="full"><label class="label">اعلان برای همه کاربران</label><input id="announcement" class="field"></div>
       </div>
       <div class="actions"><button id="saveSite" class="btn primary">🚀 انتشار تغییرات</button><button id="reloadConfig" class="btn">↻ بارگذاری دوباره</button></div>
-      <div class="note" style="margin-top:14px">انتشار از طریق Supabase انجام می‌شود؛ لازم نیست هر بار فایل GitHub را دستی عوض کنی. GitHub Pages همچنان سایت را آنلاین نگه می‌دارد. citeturn0search7</div>
+      <div class="note" style="margin-top:14px">انتشار از طریق Supabase انجام می‌شود؛ لازم نیست هر بار فایل GitHub را دستی عوض کنی GitHub Pages همچنان سایت را آنلاین نگه می‌دارد.</div>
     </section>
 
     <section id="tab-code" class="panel tabPanel" style="display:none">
@@ -99,6 +99,6 @@ $('saveSite').onclick=saveConfig;$('saveCode').onclick=saveConfig;$('reloadConfi
 $('clearCode').onclick=()=>{if(confirm('کدهای سفارشی پاک شوند؟')){$('custom_css').value='';$('custom_html').value='';$('custom_js').value='';saveConfig()}};
 $('changePass').onclick=async()=>{try{await rpc('opentray_admin_change_password',{p_token:token,p_new_password:$('newPass').value});$('newPass').value='';toast('رمز عوض شد')}catch(e){err(e)}};
 $('addAdmin').onclick=async()=>{try{await rpc('opentray_admin_add',{p_token:token,p_username:$('newAdmin').value,p_password:$('newAdminPass').value});$('newAdmin').value='';$('newAdminPass').value='';toast('ادمین جدید ساخته شد')}catch(e){err(e)}};
-(async()=>{if(token){try{await loadConfig();showApp()}catch{localStorage.removeItem('opentrayAdminToken');token='';showLogin()}}})();
+(async()=>{if(token){try{await rpc('opentray_admin_lobbies',{p_token:token});showApp()}catch{localStorage.removeItem('opentrayAdminToken');token='';showLogin()}}})();
 </script>
 </body></html>
