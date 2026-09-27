@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open Tray — مدیریت</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#030913;color:#f5f8fc;font-family:Tahoma,Arial,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
+body{min-height:100vh;background:radial-gradient(circle at 50% 0,#0c3554 0,transparent 35%),#030913}
+.wrap{width:min(1180px,94%);margin:auto;padding:28px 0 60px}.bar{display:flex;align-items:center;gap:10px;margin-bottom:18px}.logo{font-size:25px;font-weight:900;margin-left:auto}.logo span{color:#36c7ff}
+.btn{background:#091b2d;color:#fff;border:1px solid #244661;border-radius:10px;padding:10px 14px;font-weight:900}.btn.primary{background:linear-gradient(135deg,#087ec8,#0aa9ec);border-color:#0aa9ec}.btn.danger{background:#6f1e2b;border-color:#ad3b4a}
+.panel{background:#071626ed;border:1px solid #1b3c58;border-radius:16px;padding:20px;box-shadow:0 20px 60px #0007}.login{max-width:480px;margin:70px auto}.login h1{margin-top:0}.muted{color:#8fa4ba;line-height:1.8}.field{width:100%;background:#04101d;color:#fff;border:1px solid #24435f;border-radius:10px;padding:12px;margin:7px 0}.field:focus{outline:2px solid #0a94dc55;border-color:#0aa7ef}textarea.field{min-height:150px;resize:vertical;direction:ltr;text-align:left;font-family:Consolas,monospace;line-height:1.5}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{background:#071b2d;color:#b9cbe0;border:1px solid #23445e;border-radius:9px;padding:10px 14px;font-weight:900}.tab.on{background:#0a91d5;color:#fff;border-color:#10aaf0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.full{grid-column:1/-1}.label{display:block;color:#8fa8bb;font-size:12px;font-weight:900;margin:8px 0 5px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.note{background:#061321;border:1px solid #17344e;border-radius:10px;padding:11px;color:#9db1c4;line-height:1.8}.codeHint{direction:rtl;text-align:right}.lobby{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:12px;border-bottom:1px solid #142d42}.lobby strong{color:#54cfff}.lobby small{display:block;color:#8fa4ba;margin-top:4px}.status{padding:5px 8px;border-radius:8px;background:#12314a;font-size:11px}.toast{position:fixed;left:18px;bottom:18px;background:#071b2c;border:1px solid #24506d;border-radius:10px;padding:12px 16px;display:none;z-index:20}.toast.show{display:block}@media(max-width:800px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="loginPanel" class="panel login">
+    <h1>⚙️ مدیریت <span style="color:#35c7ff">Open Tray</span></h1>
+    <p class="muted">این صفحه فقط با حساب ادمین باز می‌شود. تغییرات اینجا مستقیماً روی سایت آنلاین اعمال می‌شوند.</p>
+    <input id="username" class="field" placeholder="نام ادمین" autocomplete="username">
+    <input id="password" class="field" type="password" placeholder="رمز ادمین" autocomplete="current-password">
+    <button id="loginBtn" class="btn primary" style="width:100%;margin-top:8px">ورود به پنل</button>
+    <div class="note" style="margin-top:12px">ادمین اولیه: <b>admin</b> — رمز اولیه: <b>OpenTrayAdmin#2026</b><br>بعد از ورود، از «امنیت» رمز را عوض کن.</div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="bar"><div class="logo"><span>OPEN</span> TRAY — پنل ادمین</div><a class="btn" href="index.html">↩ سایت</a><a class="btn" href="game.html">🎮 بازی</a><button id="logoutBtn" class="btn danger">خروج</button></div>
+    <div class="tabs">
+      <button class="tab" data-tab="site">✏️ تغییر سایت</button>
+      <button class="tab" data-tab="code">💻 کد سایت</button>
+      <button class="tab" data-tab="lobbies">🎮 لابی‌ها</button>
+      <button class="tab" data-tab="security">🔐 ادمین‌ها</button>
+    </div>
+
+    <section id="tab-site" class="panel tabPanel">
+      <h2>✏️ تغییر واقعی سایت</h2>
+      <p class="muted">این فیلدها را تغییر بده و «انتشار تغییرات» را بزن؛ کاربران با رفرش سایت تغییر را می‌بینند.</p>
+      <div class="grid">
+        <div><label class="label">نام سایت</label><input id="site_title" class="field"></div>
+        <div><label class="label">زیرعنوان</label><input id="site_subtitle" class="field"></div>
+        <div><label class="label">عنوان اصلی</label><input id="hero_title" class="field"></div>
+        <div><label class="label">متن اصلی</label><input id="hero_text" class="field"></div>
+        <div class="full"><label class="label">اعلان برای همه کاربران</label><input id="announcement" class="field"></div>
+      </div>
+      <div class="actions"><button id="saveSite" class="btn primary">🚀 انتشار تغییرات</button><button id="reloadConfig" class="btn">↻ بارگذاری دوباره</button></div>
+      <div class="note" style="margin-top:14px">انتشار از طریق Supabase انجام می‌شود؛ لازم نیست هر بار فایل GitHub را دستی عوض کنی. GitHub Pages همچنان سایت را آنلاین نگه می‌دارد. citeturn0search7</div>
+    </section>
+
+    <section id="tab-code" class="panel tabPanel" style="display:none">
+      <h2>💻 کد سایت</h2>
+      <p class="muted">کدهای سفارشی ذخیره‌شده در Supabase هستند و روی سایت آنلاین اعمال می‌شوند. برای تغییر ظاهر از CSS، برای بخش جدید از HTML و برای رفتارهای تعاملی از JS استفاده کن.</p>
+      <label class="label">CSS سفارشی</label><textarea id="custom_css" class="field" spellcheck="false" placeholder="body{...}"></textarea>
+      <label class="label">HTML سفارشی</label><textarea id="custom_html" class="field" spellcheck="false" placeholder="<div>...</div>"></textarea>
+      <label class="label">JavaScript سفارشی</label><textarea id="custom_js" class="field" spellcheck="false" placeholder="document.body..."></textarea>
+      <div class="actions"><button id="saveCode" class="btn primary">🚀 ذخیره و انتشار کد</button><button id="clearCode" class="btn danger">پاک کردن کد سفارشی</button></div>
+      <div class="note codeHint" style="margin-top:14px">هشدار: JavaScript سفارشی با دسترسی صفحه اجرا می‌شود؛ فقط کدی را وارد کن که خودت می‌شناسی.</div>
+    </section>
+
+    <section id="tab-lobbies" class="panel tabPanel" style="display:none">
+      <h2>🎮 لابی‌های آنلاین</h2><p class="muted">لیست واقعی لابی‌های دیتابیس را می‌بینی.</p>
+      <div class="actions"><button id="refreshLobbies" class="btn primary">↻ تازه‌سازی</button></div>
+      <div id="lobbyList" style="margin-top:10px"></div>
+    </section>
+
+    <section id="tab-security" class="panel tabPanel" style="display:none">
+      <h2>🔐 مدیریت ادمین‌ها</h2>
+      <p class="muted">می‌توانی ادمین‌های دیگری بسازی یا رمز همین ادمین را عوض کنی.</p>
+      <div class="grid">
+        <div><label class="label">نام ادمین جدید</label><input id="newAdmin" class="field" placeholder="admin2"></div>
+        <div><label class="label">رمز ادمین جدید</label><input id="newAdminPass" class="field" type="password" placeholder="حداقل ۱۰ کاراکتر"></div>
+        <div><label class="label">رمز جدید حساب فعلی</label><input id="newPass" class="field" type="password" placeholder="حداقل ۱۰ کاراکتر"></div>
+      </div>
+      <div class="actions"><button id="addAdmin" class="btn primary">➕ ساخت ادمین</button><button id="changePass" class="btn">🔑 تغییر رمز من</button></div>
+    </section>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SB_URL='https://qqwifsgnzweslkcyuqmg.supabase.co';
+const SB_KEY='sb_publishable_AI6rSMSOAag61TCJzapLbg_frex6ks9';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
+let token=localStorage.getItem('opentrayAdminToken')||'';
+const $=id=>document.getElementById(id);
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(window.__t);window.__t=setTimeout(()=>e.classList.remove('show'),2800)}
+function err(e){toast(e?.message||'خطا')}
+async function rpc(name,args){const {data,error}=await sb.rpc(name,args);if(error)throw error;return data}
+function showApp(){ $('loginPanel').style.display='none';$('app').style.display='block';switchTab(new URLSearchParams(location.search).get('tab')||'site');loadConfig()}
+function showLogin(){ $('loginPanel').style.display='block';$('app').style.display='none'}
+async function login(){try{const d=await rpc('opentray_admin_login',{p_username:$('username').value,p_password:$('password').value});token=d.token;localStorage.setItem('opentrayAdminToken',token);showApp();toast('ورود موفق بود')}catch(e){err(e)}}
+async function loadConfig(){try{const {data,error}=await sb.from('opentray_site_config').select('*').eq('id',1).single();if(error)throw error;['site_title','site_subtitle','hero_title','hero_text','announcement','custom_css','custom_html','custom_js'].forEach(k=>$(k).value=data[k]||'')}catch(e){err(e)}}
+async function saveConfig(){try{const p={p_token:token,p_config:{site_title:$('site_title').value,site_subtitle:$('site_subtitle').value,hero_title:$('hero_title').value,hero_text:$('hero_text').value,announcement:$('announcement').value,custom_css:$('custom_css').value,custom_html:$('custom_html').value,custom_js:$('custom_js').value}};await rpc('opentray_admin_save_config',p);toast('تغییرات واقعاً منتشر شد')}catch(e){err(e)}}
+async function loadLobbies(){try{const d=await rpc('opentray_admin_lobbies',{p_token:token});const list=Array.isArray(d)?d:[];$('lobbyList').innerHTML=list.length?list.map(x=>'<div class="lobby"><div><strong>'+x.code+'</strong> — '+escapeHtml(x.name||'بدون نام')+'<small>نقشه: '+escapeHtml(x.map_id)+' • بازیکن: '+x.players+'/'+x.max_players+' • ربات: '+x.bot_count+'</small></div><span class="status">'+escapeHtml(x.status)+'</span></div>').join(''):'<div class="note">لابی فعالی نیست.</div>'}catch(e){err(e)}}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function switchTab(tab){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));document.querySelectorAll('.tabPanel').forEach(x=>x.style.display=x.id==='tab-'+tab?'block':'none');history.replaceState({},'',location.pathname+'?tab='+tab);if(tab==='lobbies')loadLobbies()}
+async function logout(){try{if(token)await rpc('opentray_admin_logout',{p_token:token})}catch{}localStorage.removeItem('opentrayAdminToken');token='';showLogin()}
+$('loginBtn').onclick=login;$('password').onkeydown=e=>{if(e.key==='Enter')login()};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+$('saveSite').onclick=saveConfig;$('saveCode').onclick=saveConfig;$('reloadConfig').onclick=loadConfig;$('refreshLobbies').onclick=loadLobbies;$('logoutBtn').onclick=logout;
+$('clearCode').onclick=()=>{if(confirm('کدهای سفارشی پاک شوند؟')){$('custom_css').value='';$('custom_html').value='';$('custom_js').value='';saveConfig()}};
+$('changePass').onclick=async()=>{try{await rpc('opentray_admin_change_password',{p_token:token,p_new_password:$('newPass').value});$('newPass').value='';toast('رمز عوض شد')}catch(e){err(e)}};
+$('addAdmin').onclick=async()=>{try{await rpc('opentray_admin_add',{p_token:token,p_username:$('newAdmin').value,p_password:$('newAdminPass').value});$('newAdmin').value='';$('newAdminPass').value='';toast('ادمین جدید ساخته شد')}catch(e){err(e)}};
+(async()=>{if(token){try{await loadConfig();showApp()}catch{localStorage.removeItem('opentrayAdminToken');token='';showLogin()}}})();
+</script>
+</body></html>
