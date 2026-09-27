@@ -35,9 +35,9 @@ function setScreen(name){
 function openModal(id){$(id).classList.add('show')}
 function closeModal(id){$(id).classList.remove('show')}
 function updateTop(){
-  $('topName').textContent=state.me?.name||'ورود';
-  $('topCode').textContent=state.lobby ? 'کد: '+state.lobby.code : '';
-  $('leaveBtn').style.display=state.lobby?'inline-flex':'none';
+  if($('topName')) $('topName').textContent=state.me?.name||'ورود';
+  if($('topCode')) $('topCode').textContent=state.lobby ? 'کد: '+state.lobby.code : '';
+  if($('leaveBtn')) $('leaveBtn').style.display=state.lobby?'inline-flex':'none';
 }
 function setPlayerName(){
   const n=$('nameInput').value.trim();
@@ -186,14 +186,16 @@ async function refreshPlayers(){
   if(!state.lobby)return;
   const {data}=await supabase.from('opentray_players').select('*').eq('lobby_id',state.lobby.id).order('joined_at');
   state.players=data||[];
-  $('playerCount').textContent=state.players.length+'/'+state.lobby.max_players;
-  $('playerList').innerHTML=state.players.map(p=>'<div class="playerLine"><i style="background:'+esc(p.color)+'"></i><span>'+esc(p.player_name)+(p.is_bot?' 🤖':'')+'</span><b>'+((p.player_key===state.lobby.host_key)?'میزبان':'بازیکن')+'</b></div>').join('');
+  if($('playerCount')) $('playerCount').textContent=state.players.length+'/'+state.lobby.max_players;
+  if($('playerList')) $('playerList').innerHTML=state.players.map(p=>'<div class="playerLine"><i style="background:'+esc(p.color)+'"></i><span>'+esc(p.player_name)+(p.is_bot?' 🤖':'')+'</span><b>'+((p.player_key===state.lobby.host_key)?'میزبان':'بازیکن')+'</b></div>').join('');
 }
 async function loadChat(){
   if(!state.lobby)return;
   const {data}=await supabase.from('opentray_chat').select('*').eq('lobby_id',state.lobby.id).order('created_at',{ascending:true}).limit(80);
-  $('chat').innerHTML=(data||[]).map(chatHtml).join('');
-  $('chat').scrollTop=$('chat').scrollHeight;
+  const box=$('chat')||$('gameChat');
+  if(!box)return;
+  box.innerHTML=(data||[]).map(chatHtml).join('');
+  box.scrollTop=box.scrollHeight;
 }
 function chatHtml(m){return '<div class="msg"><b>'+esc(m.player_name)+'</b><span>'+esc(m.message)+'</span></div>'}
 function subscribeLobby(){
@@ -201,7 +203,7 @@ function subscribeLobby(){
   state.chatChannel=supabase.channel('opentray-lobby-'+state.lobby.id)
     .on('postgres_changes',{event:'*',schema:'public',table:'opentray_players',filter:'lobby_id=eq.'+state.lobby.id},()=>refreshPlayers())
     .on('postgres_changes',{event:'*',schema:'public',table:'opentray_lobbies',filter:'id=eq.'+state.lobby.id},payload=>{
-      if(payload.new){state.lobby={...state.lobby,...payload.new}; updateTop(); if(state.lobby.status==='playing') startClientGame()}
+      if(payload.new){state.lobby={...state.lobby,...payload.new}; updateTop(); if(state.lobby.status==='playing'){if(document.body.dataset.page==='game') startClientGame(); else location.href='game.html?code='+encodeURIComponent(state.lobby.code)}}
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'opentray_chat',filter:'lobby_id=eq.'+state.lobby.id},payload=>{
       $('chat').insertAdjacentHTML('beforeend',chatHtml(payload.new)); $('chat').scrollTop=$('chat').scrollHeight;
@@ -261,7 +263,10 @@ async function startClientGame(){
   setScreen('gameScreen'); state.started=true; hideRadial();
   $('gameCode').textContent=state.lobby.code;
   $('gameMapName').textContent=MAPS[state.lobby.map_id]?.label||'جهان';
-  $('liveAttack').textContent=state.lobby.attack_percent+'%';
+  state.attackPercent=Number(state.lobby.attack_percent||50);
+  $('liveAttack').textContent=state.attackPercent+'%';
+  if($('attackPercent')) $('attackPercent').value=state.attackPercent;
+  if($('attackValue')) $('attackValue').textContent=state.attackPercent+'%';
   $('mapCanvas').width=$('mapCanvas').clientWidth*devicePixelRatio;
   $('mapCanvas').height=$('mapCanvas').clientHeight*devicePixelRatio;
   $('mapCanvas').style.width='100%'; $('mapCanvas').style.height='100%';
@@ -383,7 +388,7 @@ function fillAttackTargets(fromId){
 function renderAttackHint(){
   const id=$('attackTarget').value;const st=state.lobby.game_state.countries[id];
   const from=state.lobby.game_state.countries[state.selected]; if(!st||!from){$('attackHint').textContent='کشور هدف را انتخاب کن';return}
-  const send=Math.max(1,Math.floor(from.troops*Number(state.lobby.attack_percent)/100));
+  const send=Math.max(1,Math.floor(from.troops*Number(state.attackPercent||state.lobby.attack_percent||50)/100));
   $('attackHint').textContent='با '+send+' نیرو حمله می‌کنی؛ '+(st.troops||0)+' نیروی مدافع دارد.';
 }
 async function confirmAttack(){
@@ -505,10 +510,12 @@ function renderStats(){
   $('gold').textContent=p.gold;$('troops').textContent=p.troops+'/'+p.max_troops;$('cities').textContent=p.cities;$('anchor').textContent=p.anchor?'فعال':'خاموش';
   const mine=Object.values(state.lobby?.game_state?.countries||{}).filter(x=>x.owner===state.me.key).length;
   $('owned').textContent=mine;
-  $('leaderboard').innerHTML=state.players.map(x=>{
+  const html=state.players.map(x=>{
     const own=Object.values(state.lobby.game_state.countries||{}).filter(c=>c.owner===x.player_key).length;
     return '<div class="scoreRow"><i style="background:'+esc(x.color)+'"></i><b>'+esc(x.player_name)+'</b><span>'+own+' کشور</span><strong>'+x.gold+' 🪙</strong></div>'
-  }).sort((a,b)=>b.innerHTML.localeCompare(a.innerHTML)).join('');
+  }).sort((a,b)=>b.localeCompare(a)).join('');
+  if($('leaderboard')) $('leaderboard').innerHTML=html;
+  if($('leaderboardModal')) $('leaderboardModal').innerHTML=html;
 }
 function showAttackTarget(id){
   state.selected=id; hideRadial();$('attackPanel').classList.add('show');fillAttackTargets(id);
