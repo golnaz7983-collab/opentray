@@ -180,7 +180,7 @@ button{cursor:pointer;border:0}
    <button class="action" id="joinTop" onclick="join('لابی دوستان')">پیوستن به لابی</button>
   </div>
 
-  <footer class="footer">OPEN TRAY • نسخه آزمایشی منوی بازی<br><span>این نسخه فقط منوی اصلی است؛ بخش بازی‌ها و قابلیت‌های اصلی در مرحله بعد اضافه می‌شوند.</span></footer>
+  <footer class="footer">OPEN TRAY • نسخه آزمایشی منوی بازی<br><span>لابی آنلاین، نقشه جهان، ربات‌ها، تصرف کشور، اقتصاد، چت و بازی زنده فعال است.</span></footer>
  </div>
 </main>
 
@@ -208,7 +208,7 @@ button{cursor:pointer;border:0}
   <div class="gameBar">
     <span class="gameCode">کد <span id="gameCode">------</span></span>
     <span class="stat">🪙 طلا <b id="gold">0</b></span><span class="stat">⚔️ نیرو <b id="troops">0/0</b></span><span class="stat">🏙️ شهر <b id="cities">0</b></span><span class="stat">⚓ <b id="anchor">خاموش</b></span><span class="stat">🌐 کشور <b id="owned">0</b></span>
-    <b class="gameMapName" id="gameMapName">جهان</b><button class="topBtn" onclick="openModal('statsModal');renderStats()">جدول</button><button class="topBtn" onclick="leaveLobby()">خروج</button>
+    <b class="gameMapName" id="gameMapName">جهان</b><button class="topBtn" onclick="openModal('statsModal');renderStats()">جدول</button><button class="topBtn" id="fullscreenBtn">⛶ تمام‌صفحه</button><button class="topBtn" onclick="leaveLobby()">خروج</button>
   </div>
   <div class="gameLayout">
     <aside class="side">
@@ -252,7 +252,7 @@ button{cursor:pointer;border:0}
   <div class="grid2"><div class="control"><div class="label">نقشه</div><select id="createMap" class="field"><option value="world">🌍 جهان</option><option value="asia">🌏 آسیا</option><option value="europe">🌍 اروپا</option></select></div><div class="control"><div class="label">حداکثر بازیکن</div><select id="maxPlayers" class="field"><option>4</option><option selected>6</option><option>8</option><option>10</option><option>12</option></select></div></div>
   <div class="grid2"><div class="control"><div class="label">تعداد ربات</div><select id="botCount" class="field"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></div><div class="control"><div class="label">سختی ربات</div><select id="botDifficulty" class="field"><option value="easy">آسان</option><option value="normal" selected>متوسط</option><option value="hard">سخت</option></select></div></div>
   <label class="check"><input id="randomSpawn" type="checkbox" checked> اسپان تصادفی برای بازیکن‌ها</label>
-  <div class="control" style="margin-top:12px"><div class="label">درصد حمله نیرو: <b id="attackValue">50%</b></div><input id="attackPercent" class="range" type="range" min="10" max="90" value="50"></div>
+  <div class="control" style="margin-top:12px"><div class="label">درصد حمله نیرو: <b id="createAttackValue">50%</b></div><input id="createAttackPercent" class="range" type="range" min="10" max="90" value="50"></div>
   <div class="modalActions"><button class="primary" id="createBtn">ساخت و ورود</button><button id="closeCreate2" onclick="closeModal('createModal')">لغو</button></div>
 </div></div>
 
@@ -272,6 +272,7 @@ button{cursor:pointer;border:0}
 <div class="toast" id="toast"></div>
 
 <div class="overlay" id="infoModal"><div class="modal"><button class="closeX" onclick="closeModal('infoModal')">×</button><h2>Open Tray</h2><p>این بخش فعلاً در دست ساخت است.</p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="game.js"></script>
