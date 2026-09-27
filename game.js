@@ -12,7 +12,7 @@ const BOT_NAMES = ['آلفا','بتا','گاما','دلتا','سیگما','اُ�
 const state = {
   me:null, lobby:null, players:[], features:[], mapFeatures:[], projection:null, path:null,
   colorCanvas:null, colorCtx:null, canvas:null, ctx:null, selected:null, attackMode:false,
-  chatChannel:null, lastCode:'', world:null, started:false, hostTimer:null
+  chatChannel:null, lastCode:'', world:null, started:false, hostTimer:null, attackPercent:50
 };
 
 const $ = id => document.getElementById(id);
@@ -53,15 +53,25 @@ async function init(){
   await refreshLobbies();
 }
 async function loadWorld(){
-  try{
-    const topo=await fetch('https://cdn.jsdelivr.net/npm/visionscarto-world-atlas@1/world/110m.json',{cache:'force-cache'}).then(r=>r.json());
-    state.world=topo;
-    state.features=topojson.feature(topo,topo.objects.countries).features;
-    $('mapLoad').textContent='نقشه آماده است';
-  }catch(e){
-    $('mapLoad').textContent='خطا در نقشه؛ دوباره تلاش کن';
-    toast('نقشه جهان بارگذاری نشد');
+  const urls=[
+    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',
+    'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'
+  ];
+  for(const url of urls){
+    try{
+      const r=await fetch(url,{cache:'force-cache'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const topo=await r.json();
+      if(!topo?.objects?.countries) throw new Error('countries object missing');
+      state.world=topo;
+      state.features=topojson.feature(topo,topo.objects.countries).features;
+      if($('mapLoad')) $('mapLoad').textContent='نقشه آماده است';
+      return true;
+    }catch(e){}
   }
+  if($('mapLoad')) $('mapLoad').textContent='خطا در نقشه؛ دوباره تلاش کن';
+  toast('نقشه جهان بارگذاری نشد');
+  return false;
 }
 function bindUI(){
   $('topName').onclick=()=>openModal('loginModal');
@@ -77,7 +87,8 @@ function bindUI(){
   $('gameSend').onclick=sendGameChat;
   $('gameChatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendGameChat()});
   $('saveName').onclick=setPlayerName;
-  $('attackPercent').oninput=()=>{$('attackValue').textContent=$('attackPercent').value+'%'; if(state.lobby) $('liveAttack').textContent=$('attackPercent').value+'%'};
+  if($('createAttackPercent')) $('createAttackPercent').oninput=()=>{$('createAttackValue').textContent=$('createAttackPercent').value+'%'};
+  if($('attackPercent')) $('attackPercent').oninput=()=>{state.attackPercent=Number($('attackPercent').value);if($('attackValue'))$('attackValue').textContent=state.attackPercent+'%';if($('liveAttack'))$('liveAttack').textContent=state.attackPercent+'%';};
   document.querySelectorAll('[data-map]').forEach(b=>b.onclick=()=>selectMap(b.dataset.map));
   $('closeCreate').onclick=()=>closeModal('createModal');
   $('closeJoin').onclick=()=>closeModal('joinModal');
@@ -104,7 +115,7 @@ function selectMap(map){
     state.lobby.map_id=map;
     $('lobbyMap').textContent=MAPS[map].label;
   }
-  drawMap();
+  if($('mapCanvas')) drawMap();
 }
 function genCode(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -118,7 +129,7 @@ async function createLobby(){
   const bots=Number($('botCount').value);
   const difficulty=$('botDifficulty').value;
   const randomSpawn=$('randomSpawn').checked;
-  const attack=Number($('attackPercent').value);
+  const attack=Number($('createAttackPercent')?.value||50);
   const code=genCode();
   const {data,error}=await supabase.from('opentray_lobbies').insert({
     code,name,map_id:map,max_players:max,bot_difficulty:difficulty,bot_count:Math.min(bots,max-1),
@@ -227,11 +238,14 @@ async function startGame(){
   }
   const {data:all}=await supabase.from('opentray_players').select('*').eq('lobby_id',state.lobby.id).order('joined_at');
   const available=state.features.filter(f=>MAPS[state.lobby.map_id].filter(f));
-  const pool=shuffle(available).slice(0,Math.max(20,Math.min(available.length,80)));
   const countries={};
-  pool.forEach(f=>{countries[f.id||f.properties?.id]={owner:null,troops:10+Math.floor(Math.random()*21),cities:0,anchor:false}});
+  available.forEach(f=>{
+    const id=f.id||f.properties?.id;
+    countries[id]={owner:null,troops:10+Math.floor(Math.random()*21),cities:0,anchor:false};
+  });
   const roster=all||players;
-  shuffle([...pool]).slice(0,roster.length).forEach((f,i)=>{
+  const spawnPool=state.lobby.random_spawn?shuffle([...available]):[...available];
+  spawnPool.slice(0,roster.length).forEach((f,i)=>{
     const id=f.id||f.properties?.id;
     countries[id].owner=roster[i].player_key;
     countries[id].troops=55;
@@ -239,6 +253,7 @@ async function startGame(){
   const gameState={version:1,map:state.lobby.map_id,countries,turn:1,updated:Date.now()};
   const {error}=await supabase.from('opentray_lobbies').update({status:'playing',game_state:gameState}).eq('id',state.lobby.id);
   if(error){toast('شروع بازی نشد: '+error.message);return}
+  window.location.href='game.html?code='+encodeURIComponent(state.lobby.code);
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 async function startClientGame(){
@@ -257,15 +272,18 @@ async function startClientGame(){
   if(state.lobby.host_key===state.me.key && !state.hostTimer) state.hostTimer=setInterval(hostTick,5000);
 }
 function setupMap(){
-  const c=$('mapCanvas'), rect=c.getBoundingClientRect(), dpr=devicePixelRatio||1;
+  const c=$('mapCanvas');
+  if(!c) return false;
+  const rect=c.getBoundingClientRect(), dpr=devicePixelRatio||1;
   c.width=rect.width*dpr;c.height=rect.height*dpr;
   state.canvas=c;state.ctx=c.getContext('2d');state.ctx.setTransform(dpr,0,0,dpr,0,0);
-  state.colorCanvas=document.createElement('canvas');state.colorCanvas.width=rect.width;state.colorCanvas.height=rect.height;
+  state.colorCanvas=document.createElement('canvas');state.colorCanvas.width=Math.max(1,rect.width);state.colorCanvas.height=Math.max(1,rect.height);
   state.colorCtx=state.colorCanvas.getContext('2d');
+  return true;
 }
 function drawMap(){
-  if(!state.features.length)return;
-  if(!state.canvas)setupMap();
+  if(!state.features.length || !$('mapCanvas')) return;
+  if(!state.canvas && !setupMap()) return;
   const c=state.canvas, rect=c.getBoundingClientRect(), w=rect.width,h=rect.height;
   const map=MAPS[state.lobby?.map_id||document.querySelector('[data-map].active')?.dataset.map||'world'];
   const center=map.center;
@@ -382,7 +400,7 @@ async function confirmAttack(){
   gs.updated=Date.now();
   await saveGame(gs);
   const me=state.players.find(p=>p.player_key===state.me.key);
-  if(me){me.gold+=won?30:0;await syncPlayer(me)}
+  if(me){await syncPlayer(me)}
   hideRadial();toast(won?'⚔️ کشور فتح شد +۳۰ طلا':'🛡️ حمله دفع شد');
   renderStats();
 }
@@ -449,6 +467,7 @@ async function hostTick(){
     const owned=Object.values(gs.countries||{}).filter(c=>c.owner===p.player_key);
     const cap=Math.max(20,p.max_troops||100);
     const total=owned.reduce((n,c)=>n+(c.troops||0),0);
+    p.troops=total;
     const room=Math.max(0,cap-total);
     let left=room;
     owned.forEach(c=>{if(left>0){const add=Math.min(left,1+(c.cities||0));c.troops=(c.troops||0)+add;left-=add}});
@@ -506,4 +525,112 @@ async function leaveLobby(){
   updateTop();setScreen('homeScreen');refreshLobbies();toast('از لابی خارج شدی');
 }
 window.addEventListener('resize',()=>{if(state.started){setupMap();drawMap()}});
+document.addEventListener('DOMContentLoaded',init);
+
+
+/* Open Tray stability layer: home lobby + dedicated game page */
+function onEl(id,event,fn){
+  const el=$(id);
+  if(el) el.addEventListener(event,fn);
+}
+function enterGameFullscreen(){
+  const target=document.documentElement;
+  if(target.requestFullscreen){
+    target.requestFullscreen({navigationUI:'hide'}).catch(()=>{});
+  }
+}
+function setupGamePage(){
+  loadMe();
+  const code=(new URLSearchParams(location.search).get('code')||'').trim().toUpperCase();
+  if(!code){ location.href='index.html'; return; }
+  if($('statsBtn')) $('statsBtn').onclick=()=>{openModal('statsModal');renderStats()};
+  if($('fullscreenBtn')) $('fullscreenBtn').onclick=enterGameFullscreen;
+  if($('startFullscreen')) $('startFullscreen').onclick=async()=>{enterGameFullscreen();closeModal('fullscreenGate');$('fullscreenGate').classList.remove('show')};
+  if($('leaveGameBtn')) $('leaveGameBtn').onclick=leaveLobby;
+  if($('closeStats')) $('closeStats').onclick=()=>closeModal('statsModal');
+  if($('closeTrade')) $('closeTrade').onclick=()=>closeModal('tradeModal');
+  if($('cancelAttack')) $('cancelAttack').onclick=hideRadial;
+  onEl('gameSend','click',sendGameChat);
+  onEl('gameChatInput','keydown',e=>{if(e.key==='Enter')sendGameChat()});
+  onEl('confirmAttack','click',confirmAttack);
+  onEl('buildBtn','click',buildCity);
+  onEl('anchorBtn','click',buildAnchor);
+  onEl('tradeBtn','click',openTrade);
+  onEl('radialCancel','click',hideRadial);
+  onEl('mapCanvas','click',onMapClick);
+  onEl('mapCanvas','mousemove',onMapMove);
+  onEl('mapZoomOut','click',()=>zoomMap(.88));
+  onEl('mapZoomIn','click',()=>zoomMap(1.12));
+  onEl('mapReset','click',()=>drawMap());
+  onEl('attackTarget','change',renderAttackHint);
+  if($('attackPercent')) $('attackPercent').oninput=()=>{state.attackPercent=Number($('attackPercent').value);$('attackValue').textContent=state.attackPercent+'%';$('liveAttack').textContent=state.attackPercent+'%'};
+  $('fullscreenGate')?.classList.add('show');
+  fetchLobbyForGame(code);
+}
+async function fetchLobbyForGame(code){
+  const {data:l,error}=await supabase.from('opentray_lobbies').select('*').eq('code',code).maybeSingle();
+  if(error||!l){toast('این لابی پیدا نشد');setTimeout(()=>location.href='index.html',900);return}
+  state.lobby=l;state.lastCode=code;
+  updateTop();
+  await loadWorld();
+  subscribeLobby();
+  if(l.status==='playing' && l.game_state){startClientGame();}
+  else toast('در انتظار شروع بازی توسط میزبان...');
+}
+function bindUI(){
+  onEl('topName','click',()=>openModal('loginModal'));
+  onEl('joinTop','click',()=>openModal('joinModal'));
+  onEl('createTop','click',()=>openModal('createModal'));
+  onEl('leaveBtn','click',leaveLobby);
+  onEl('createBtn','click',createLobby);
+  onEl('joinCodeBtn','click',()=>joinByCode($('joinCode')?.value));
+  onEl('refreshBtn','click',refreshLobbies);
+  onEl('startBtn','click',startGame);
+  onEl('sendChat','click',sendChat);
+  onEl('chatInput','keydown',e=>{if(e.key==='Enter')sendChat()});
+  onEl('saveName','click',setPlayerName);
+  onEl('createAttackPercent','input',()=>{$('createAttackValue').textContent=$('createAttackPercent').value+'%'});
+  onEl('attackPercent','input',()=>{state.attackPercent=Number($('attackPercent').value);if($('attackValue'))$('attackValue').textContent=state.attackPercent+'%';if($('liveAttack'))$('liveAttack').textContent=state.attackPercent+'%'});
+  document.querySelectorAll('[data-map]').forEach(b=>b.onclick=()=>selectMap(b.dataset.map));
+  onEl('closeCreate','click',()=>closeModal('createModal'));
+  onEl('closeJoin','click',()=>closeModal('joinModal'));
+  onEl('closeLogin','click',()=>closeModal('loginModal'));
+  onEl('closeTrade','click',()=>closeModal('tradeModal'));
+  onEl('closeStats','click',()=>closeModal('statsModal'));
+  onEl('confirmAttack','click',confirmAttack);
+  onEl('buildBtn','click',buildCity);
+  onEl('anchorBtn','click',buildAnchor);
+  onEl('tradeBtn','click',openTrade);
+  onEl('radialCancel','click',hideRadial);
+  onEl('mapCanvas','click',onMapClick);
+  onEl('mapCanvas','mousemove',onMapMove);
+  onEl('mapZoomOut','click',()=>zoomMap(.88));
+  onEl('mapZoomIn','click',()=>zoomMap(1.12));
+  onEl('mapReset','click',()=>drawMap());
+  onEl('attackTarget','change',renderAttackHint);
+}
+async function init(){
+  loadMe();
+  if(document.body.dataset.page==='game'){setupGamePage();return;}
+  updateTop();
+  if($('nameInput')) $('nameInput').value=state.me.name;
+  bindUI();
+  await loadWorld();
+  await refreshLobbies();
+}
+function leaveLobby(){
+  const old=state.lobby;
+  (async()=>{
+    if(old){
+      await supabase.from('opentray_players').delete().eq('lobby_id',old.id).eq('player_key',state.me.key);
+      if(old.host_key===state.me.key && old.status==='waiting') await supabase.from('opentray_lobbies').delete().eq('id',old.id);
+      if(state.chatChannel){await supabase.removeChannel(state.chatChannel);state.chatChannel=null}
+    }
+    state.lobby=null;state.started=false;state.selected=null;
+    if(state.hostTimer){clearInterval(state.hostTimer);state.hostTimer=null}
+    if(document.body.dataset.page==='game'){location.href='index.html';return;}
+    updateTop();setScreen('homeScreen');refreshLobbies();toast('از لابی خارج شدی');
+  })();
+}
+window.addEventListener('resize',()=>{if(state.started && $('mapCanvas')){setupMap();drawMap()}});
 document.addEventListener('DOMContentLoaded',init);
