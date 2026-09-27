@@ -282,4 +282,34 @@ function join(x){openModal('joinModal');refreshLobbies()}
 function openLogin(){openModal('loginModal')}
 function info(x){event?.preventDefault();openModal('infoModal')}
 </script>
+
+<div id="siteAnnouncement" style="position:fixed;right:16px;bottom:16px;z-index:90;max-width:min(520px,90vw);display:none;background:#071a2a;border:1px solid #1e4b68;border-radius:12px;padding:12px 15px;color:#fff;box-shadow:0 18px 50px #0008"></div>
+<div id="adminCustomHtml"></div>
+<style id="adminCustomStyle"></style>
+<script>
+(function(){
+  const SB_URL='https://qqwifsgnzweslkcyuqmg.supabase.co';
+  const SB_KEY='sb_publishable_AI6rSMSOAag61TCJzapLbg_frex6ks9';
+  async function applySiteConfig(){
+    try{
+      const c=window.supabase.createClient(SB_URL,SB_KEY);
+      const {data,error}=await c.from('opentray_site_config').select('*').eq('id',1).maybeSingle();
+      if(error||!data)return;
+      document.title=(data.site_title||'OPEN TRAY')+' — بازی';
+      document.querySelectorAll('.logo b,.brand b').forEach(x=>x.textContent=data.site_title||x.textContent);
+      document.querySelectorAll('.logo small,.brand small').forEach(x=>x.textContent=data.site_subtitle||x.textContent);
+      const h=document.querySelector('.heroTitle h1'); if(h&&data.hero_title)h.textContent=data.hero_title;
+      const p=document.querySelector('.heroTitle p'); if(p&&data.hero_text)p.textContent=data.hero_text;
+      const a=document.getElementById('siteAnnouncement');
+      if(a&&data.announcement){a.textContent=data.announcement;a.style.display='block';}
+      if(data.custom_css)document.getElementById('adminCustomStyle').textContent=data.custom_css;
+      if(data.custom_html)document.getElementById('adminCustomHtml').innerHTML=data.custom_html;
+      if(data.custom_js){
+        try{ new Function(data.custom_js)(); }catch(e){ console.error('Open Tray custom JS:',e); }
+      }
+    }catch(e){console.warn('site config unavailable',e)}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applySiteConfig);else applySiteConfig();
+})();
+</script>
 </body></html>
