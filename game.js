@@ -258,7 +258,7 @@ async function startGame(){
   window.location.href='game.html?code='+encodeURIComponent(state.lobby.code);
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-async function startClientGame(){
+async async function startClientGame(){
   if(!state.lobby?.game_state){return}
   setScreen('gameScreen'); state.started=true; hideRadial();
   $('gameCode').textContent=state.lobby.code;
